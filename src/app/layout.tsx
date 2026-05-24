@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'ProFaceApp — AI Professional Headshots in Seconds',
-  description: 'Generate studio-quality AI professional headshots in seconds. Upload selfies, get 3 polished portraits for LinkedIn, resumes & team pages.',
+  description: 'Generate studio-quality AI professional headshots in seconds. Upload selfies, get 1 polished portrait for LinkedIn, resumes & team pages.',
   openGraph: {
     title: 'ProFaceApp — AI Professional Headshots',
     description: 'Studio-quality AI headshots in 90 seconds.',
