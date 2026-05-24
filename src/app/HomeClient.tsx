@@ -10,15 +10,16 @@ type AuthTab = 'login' | 'signup';
 type Billing = 'monthly' | 'yearly';
 
 const PRICES = {
-  starter: { monthly: 9,  yearly: 7  },
+  starter: { monthly: 19,  yearly: 15  },
   pro:     { monthly: 29, yearly: 23 },
   max:     { monthly: 99, yearly: 79 },
 };
 
 const BILLED = {
-  starter: { monthly: 'Billed monthly', yearly: 'Billed $84/year'  },
+  starter: { monthly: 'Billed monthly', yearly: 'Billed $182/year'  },
   pro:     { monthly: 'Billed monthly', yearly: 'Billed $276/year' },
   max:     { monthly: 'Billed monthly', yearly: 'Billed $948/year' },
+  oneshot: { monthly: process.env.STRIPE_PRICE_ONESHOT!, yearly: process.env.STRIPE_PRICE_ONESHOT! },
 };
 
 const GEN_STEPS = [
@@ -427,20 +428,20 @@ export default function HomeClient() {
               </button>
               <ul className="features">
                 {plan === 'starter' && <>
-                  <li><span className="check">✓</span><span><strong>10 credits</strong> / month — 30 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month — 10 photos</span></li>
                   <li><span className="check">✓</span><span>Standard render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (2048px)</span></li>
                 </>}
                 {plan === 'pro' && <>
-                  <li><span className="check">✓</span><span><strong>50 credits</strong> / month — 150 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month — 25 photos</span></li>
                   <li><span className="check">✓</span><span>High-likeness AI model</span></li>
                   <li><span className="check">✓</span><span>Priority render queue</span></li>
                   <li><span className="check">✓</span><span>Commercial use license</span></li>
                   <li><span className="check">✓</span><span>4K downloads</span></li>
                 </>}
                 {plan === 'max' && <>
-                  <li><span className="check">✓</span><span><strong>200 credits</strong> / month — 600 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 100 photos</span></li>
                   <li><span className="check">✓</span><span>Ultra-high likeness model</span></li>
                   <li><span className="check">✓</span><span>Instant priority rendering</span></li>
                   <li><span className="check">✓</span><span>Team seats & brand presets</span></li>
@@ -452,10 +453,9 @@ export default function HomeClient() {
         </div>
         <p className="pricing-foot">
           Need just one pack?{' '}
-          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => openAuth('signup')}>
-            Buy 1 credit for $4.90
+          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => setBilling('ONESHOT')}>
+            Buy 10 credit for $4.90
           </button>{' '}
-          — no subscription.
         </p>
       </section>
 
