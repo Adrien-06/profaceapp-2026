@@ -452,7 +452,7 @@ export default function HomeClient() {
         </div>
         <p className="pricing-foot">
           Need just one pack?{' '}
-          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => setBilling('ONE')}>
+          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => setBilling('one')}>
             Buy 10 credit for $4.90
           </button>{' '}
         </p>
