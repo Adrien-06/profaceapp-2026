@@ -400,7 +400,7 @@ export default function HomeClient() {
         <div className="section-head">
           <span className="kicker">Pricing</span>
           <h2>Simple, transparent pricing.</h2>
-          <p>Every credit returns a pack of <strong>3 professional photos</strong>. Cancel anytime.</p>
+          <p>Each generation costs <strong>10 credits</strong> and produces 3 professional photos. Cancel anytime.</p>
           <div className="billing-toggle">
             <button className={`bt-opt${billing === 'monthly' ? ' active' : ''}`} onClick={() => setBilling('monthly')}>Monthly</button>
             <button className={`bt-opt${billing === 'yearly' ? ' active' : ''}`} onClick={() => setBilling('yearly')}>
@@ -452,8 +452,8 @@ export default function HomeClient() {
         </div>
         <p className="pricing-foot">
           Need just one pack?{' '}
-          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => setBilling('one')}>
-            Buy 10 credit for $4.90
+          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => handlePlan('oneshot')}>
+            Buy 10 credits for $4.90 — 1 generation
           </button>{' '}
         </p>
       </section>
