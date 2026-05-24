@@ -19,7 +19,6 @@ const BILLED = {
   starter: { monthly: 'Billed monthly', yearly: 'Billed $182/year'  },
   pro:     { monthly: 'Billed monthly', yearly: 'Billed $276/year' },
   max:     { monthly: 'Billed monthly', yearly: 'Billed $948/year' },
-  oneshot: { monthly: process.env.STRIPE_PRICE_ONESHOT!, yearly: process.env.STRIPE_PRICE_ONESHOT! },
 };
 
 const GEN_STEPS = [
