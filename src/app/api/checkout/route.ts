@@ -17,12 +17,17 @@ const PRICE_IDS: Record<string, Record<string, string>> = {
     monthly: process.env.STRIPE_PRICE_MAX_MONTHLY!,
     yearly:  process.env.STRIPE_PRICE_MAX_YEARLY!,
   },
+  oneshot: {
+    monthly: process.env.STRIPE_PRICE_ONESHOT!,
+    yearly:  process.env.STRIPE_PRICE_ONESHOT!,
+  },
 };
 
 const CREDITS: Record<string, number> = {
-  starter: 10,
-  pro:     50,
-  max:     200,
+  starter: 100,
+  pro:     250,
+  max:     1000,
+  oneshot: 10,
 };
 
 export async function GET(req: Request) {
