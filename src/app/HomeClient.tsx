@@ -7,7 +7,7 @@ import { Suspense } from 'react';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type AuthTab = 'login' | 'signup';
-type Billing = 'monthly' | 'yearly' | 'one';
+type Billing = 'monthly' | 'yearly';
 
 const PRICES = {
   starter: { monthly: 19,  yearly: 15  },
