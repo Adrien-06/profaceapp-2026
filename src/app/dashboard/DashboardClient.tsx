@@ -92,7 +92,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
           <div className="stat-card highlight">
             <span className="stat-label">Credits remaining</span>
             <span className="stat-value">{profile.credits}</span>
-            <span className="stat-sub">3 credits = 1 professional photo</span>
+            <span className="stat-sub">10 credits = 1 professional photo</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Packs generated</span>
@@ -106,7 +106,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
           </div>
         </div>
 
-        {profile.credits < 3 && (
+        {profile.credits < 10 && (
           <div style={{
             background: 'var(--blue-50)', border: '1px solid var(--blue-100)',
             borderRadius: 'var(--r-xl)', padding: '20px 24px',
@@ -118,7 +118,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
                 {profile.credits === 0 ? "You're out of credits" : 'Not enough credits'}
               </p>
               <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4 }}>
-                You need at least 3 credits to generate a professional headshot.
+                You need at least 10 credits to generate a professional headshot.
               </p>
             </div>
             <a href="/#pricing" className="btn-primary" style={{ whiteSpace: 'nowrap', textDecoration: 'none', padding: '12px 24px', borderRadius: 12 }}>Buy credits</a>
