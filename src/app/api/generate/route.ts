@@ -4,7 +4,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-const CREDITS_PER_GENERATION = 3;
+const CREDITS_PER_GENERATION = 10;
 
 const HEADSHOT_PROMPT =
     'A professional corporate commercial headshot of a from this selfie, arms crossed, torso position slightly turned, looking directly into the camera with Maintaining the natural mouth shape with slight smile and exact facial expression from the reference image. No added teeth, no exaggerated smile. Wearing a premium tailored charcoal gray business suit with a crisp white shirt. Shot on a high-end medium format camera, 85mm lens, f/2.8 aperture, creating a soft cinematic bokeh. Clean, Sophisticated premium soft office background with a cinematic bokeh blur, softly blurred with natural window light and subtle corporate premium interior details. Professional studio lighting cinema style, soft key light, subtle rim light to separate the subject from the background. Photorealistic, hyper-detailed skin texture, with slightly smoothing out the imperfections, individual hair strands, high-resolution 8k, commercial advertising photography style.';
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             .single();
 
       if (!profile || profile.credits < CREDITS_PER_GENERATION) {
-              return NextResponse.json({ error: 'Insufficient credits. You need at least 3 credits to generate a photo.' }, { status: 402 });
+              return NextResponse.json({ error: 'Insufficient credits. You need at least 10 credits to generate a photo.' }, { status: 402 });
       }
 
       // Create pack record
