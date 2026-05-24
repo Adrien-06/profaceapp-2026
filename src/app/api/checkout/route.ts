@@ -17,12 +17,14 @@ const PRICE_IDS: Record<string, Record<string, string>> = {
     monthly: process.env.STRIPE_PRICE_MAX_MONTHLY!,
     yearly:  process.env.STRIPE_PRICE_MAX_YEARLY!,
   },
+  // ⚠️ Pense à ajouter 'oneshot' ici si tes variables d'environnement le gèrent
 };
 
 const CREDITS: Record<string, number> = {
   starter: 10,
   pro:     50,
   max:     200,
+  // ⚠️ Pense à ajouter les crédits pour 'oneshot' ici aussi
 };
 
 export async function GET(req: Request) {
@@ -45,7 +47,7 @@ export async function GET(req: Request) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
   const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
+    mode: plan === 'oneshot' ? 'payment' : 'subscription', // <-- Condition ajoutée ici
     payment_method_types: ['card'],
     customer_email: user.email,
     line_items: [{ price: priceId, quantity: 1 }],
