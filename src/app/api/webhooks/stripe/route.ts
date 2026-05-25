@@ -136,5 +136,40 @@ export async function POST(req: Request) {
       }
   }
 
+  // ── customer.subscription.updated — fires when subscription becomes active
+  if (event.type === 'customer.subscription.updated') {
+        const subscription = event.data.object as any;
+        const previousStatus = (event.data as any).previous_attributes?.status;
+
+        // Only credit when subscription transitions from incomplete to active
+        if (previousStatus === 'incomplete' && subscription.status === 'active') {
+          console.log(`[stripe-webhook] subscription.updated: ${subscription.id} became active`);
+
+          const userId = subscription.metadata?.user_id ?? null;
+          const plan = subscription.metadata?.plan ?? 'starter';
+          const credits = parseInt(subscription.metadata?.credits ?? '0', 10) || PLAN_CREDITS[plan] || 0;
+
+          if (credits) {
+            try {
+              // Retrieve customer email
+              const customer = await stripe.customers.retrieve(subscription.customer as string);
+              const email = (customer as any).email ?? null;
+
+              console.log(`[stripe-webhook] Adding credits for subscription activation`, {
+                subscriptionId: subscription.id,
+                userId,
+                email,
+                plan,
+                credits,
+              });
+
+              await addCredits(userId, email, credits, plan, subscription.id);
+            } catch (err) {
+              console.error('[stripe-webhook] Error processing subscription update:', err);
+            }
+          }
+        }
+  }
+
   return NextResponse.json({ received: true });
 }
