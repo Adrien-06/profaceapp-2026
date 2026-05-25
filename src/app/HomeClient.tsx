@@ -388,22 +388,22 @@ export default function HomeClient() {
               <div className="snap snap-before">
                 <div className="snap-label">Selfie</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/selfie.jpg" alt="" />
+                <img className="snap-img" src="/hero/selfie.png" alt="" />
               </div>
               <div className="snap snap-after a1">
                 <div className="snap-label after">Pro · Boardroom</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/boardroom.jpg" alt="" />
+                <img className="snap-img" src="/hero/boardroom.png" alt="" />
               </div>
               <div className="snap snap-after a2">
                 <div className="snap-label after">Pro · Studio</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/studio.jpg" alt="" />
+                <img className="snap-img" src="/hero/studio.png" alt="" />
               </div>
               <div className="snap snap-after a3">
                 <div className="snap-label after">Pro · Portrait</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/portrait.jpg" alt="" />
+                <img className="snap-img" src="/hero/portrait.png" alt="" />
               </div>
               <div className="float-tag tag-1">Crisp focus</div>
               <div className="float-tag tag-2">Studio lighting</div>
