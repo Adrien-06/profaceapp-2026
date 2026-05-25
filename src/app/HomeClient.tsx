@@ -486,8 +486,9 @@ export default function HomeClient() {
                   <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 100 photos</span></li>
                   <li><span className="check">✓</span><span>Ultra-high likeness model</span></li>
                   <li><span className="check">✓</span><span>Instant priority rendering</span></li>
-                  <li><span className="check">✓</span><span>Team seats & brand presets</span></li>
                   <li><span className="check">✓</span><span>Dedicated support</span></li>
+                  <li><span className="check">✓</span><span>Private My Folders storage</span></li>
+                  <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
               </ul>
             </article>
@@ -591,7 +592,7 @@ export default function HomeClient() {
 
           <div className="pros-banner">
             <div className="pros-banner-text">
-              <h3>Need more than 200 credits a month?</h3>
+              <h3>Need more than 1000 credits a month?</h3>
               <p>We work with agencies and enterprises on custom packages, dedicated rendering capacity and SSO.</p>
             </div>
             <div className="pros-banner-stats">
