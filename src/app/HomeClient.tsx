@@ -312,7 +312,7 @@ export default function HomeClient() {
             <a href="#gallery">Gallery</a>
             <button className="btn-ghost" onClick={() => openAuth('login')}>Log in</button>
             <button className="btn-primary" onClick={() => openAuth('signup')}>Sign up</button>
-                            {currentUser && <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding:
+            {currentUser && <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}>Dashboard</a>}
           </nav>
 
           <button

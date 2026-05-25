@@ -41,7 +41,6 @@ export default function DashboardClient({ user, profile, packs }: Props) {
                                                                                                                 .catch(() => {});
                                                                                                                   // eslint-disable-next-line react-hooks/exhaustive-deps
                                                                                                                     }, []);
-    })
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
