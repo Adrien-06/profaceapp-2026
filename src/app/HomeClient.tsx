@@ -525,9 +525,9 @@ export default function HomeClient() {
         </div>
         <div className="testimonials">
           {[
-            { q: '"I used a Pro pack the night before my offsite. Got compliments all weekend. Worth every cent."', name: 'Maya R.', role: 'Product Lead', av: 'qav1' },
-            { q: '"Replaced a $400 photographer session. The boardroom shot is now my LinkedIn cover."',           name: 'Daniel K.', role: 'Sales Director', av: 'qav2' },
-            { q: '"Ninety seconds, three usable shots. I cannot tell which one is AI. That\'s the point."',       name: 'Priya S.',  role: 'Founder',       av: 'qav3' },
+            { q: '"I outfitted all 24 agents in one afternoon. We used to spend $6,000 a year on agency headshots — now it\'s a few clicks."', name: 'Sophie M.', role: 'Real Estate Agency Manager', av: 'qav1' },
+            { q: '"My firm bio shot looked dated. I had a courthouse-ready portrait in two minutes instead of booking a half-day studio session."',           name: 'James T.', role: 'Lawyer', av: 'qav2' },
+            { q: '"Saved a $500 shoot and the entire founding team now matches on the About page. Best money-and-time trade we\'ve made this quarter."',       name: 'Daniel R.',  role: 'CEO & Founder',       av: 'qav3' },
           ].map(t => (
             <blockquote key={t.name} className="quote">
               <p>{t.q}</p>
