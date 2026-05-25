@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 
-const CREDITS_PER_GENERATION = 3;
+const CREDITS_PER_GENERATION = 10;
 
 type ReplicateWebhook = {
     id: string;
