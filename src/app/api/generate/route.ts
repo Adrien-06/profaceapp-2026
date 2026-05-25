@@ -5,7 +5,9 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-fal.config({ credentials: process.env.FAL_KEY });
+// fal.ai keys are sometimes pasted with surrounding quotes/whitespace in the
+// hosting dashboard — strip them so the Authorization header is well-formed.
+const FAL_KEY = (process.env.FAL_KEY ?? '').trim().replace(/^["']|["']$/g, '');
 
 const CREDITS_PER_GENERATION = 100;
 
@@ -29,6 +31,16 @@ export async function POST(req: Request) {
     if (!selfiePath.startsWith(`${user.id}/`)) {
         return NextResponse.json({ error: 'Invalid selfie path' }, { status: 403 });
     }
+
+    // Fail fast (before touching credits) if the fal.ai key is missing
+    if (!FAL_KEY) {
+        console.error('[generate] FAL_KEY is not set in the environment');
+        return NextResponse.json(
+            { error: 'Image generation is temporarily unavailable. Please try again later.' },
+            { status: 503 },
+        );
+    }
+    fal.config({ credentials: FAL_KEY });
 
     const admin = createServiceClient();
 
@@ -150,8 +162,16 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ packId: pack.id, photos: [photoUrl] });
     } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Unknown error';
-        await failAndRefund(msg);
-        return NextResponse.json({ error: msg, packId: pack.id }, { status: 500 });
+        // fal.ai client errors carry a status + body with the real reason
+        const e = err as { status?: number; message?: string; body?: unknown };
+        const status = e?.status;
+        const detail = e?.body ? JSON.stringify(e.body) : (e?.message ?? 'Unknown error');
+        await failAndRefund(`fal.ai error (status ${status ?? '?'}): ${detail}`);
+
+        // 401/403 mean the FAL_KEY is missing/invalid/unauthorized on fal.ai
+        const userMessage = status === 401 || status === 403
+            ? 'Image generation service rejected the request (authentication). Please contact support.'
+            : 'Generation failed. Please try again.';
+        return NextResponse.json({ error: userMessage, packId: pack.id }, { status: 502 });
     }
 }
