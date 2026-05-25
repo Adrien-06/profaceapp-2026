@@ -23,43 +23,42 @@ export async function POST(req: Request) {
 
         console.log(`[upload-imgbb] Uploading image for user ${user.id}, size: ${file.size} bytes, type: ${file.type}`);
 
-        // Convert file to base64 for imgbb API
+        // Convert to base64 (matches Python: base64.b64encode(buffered.getvalue()).decode())
         const buffer = await file.arrayBuffer();
         const base64 = Buffer.from(buffer).toString('base64');
 
-        // Create URLSearchParams for imgbb API
-        const imgbbFormData = new URLSearchParams();
-        imgbbFormData.append('image', base64);
-        imgbbFormData.append('key', IMGBB_API_KEY);
-        imgbbFormData.append('expiration', '15552000'); // 180 days
+        console.log(`[upload-imgbb] Base64 encoded, length: ${base64.length} chars`);
 
-        console.log(`[upload-imgbb] Sending to imgbb API...`);
+        // API key in URL, image as base64 in body (matches Python: payload = {"key": key, "image": img_str})
+        const uploadUrl = `${IMGBB_UPLOAD_URL}?key=${IMGBB_API_KEY}`;
+        const body = `image=${encodeURIComponent(base64)}`;
 
-        // Upload to imgbb
-        const uploadRes = await fetch(IMGBB_UPLOAD_URL, {
+        console.log(`[upload-imgbb] Sending to imgbb API, body size: ${body.length} chars...`);
+
+        const uploadRes = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: imgbbFormData.toString(),
+            body,
         });
 
-        const uploadData = await uploadRes.json() as {
+        const responseText = await uploadRes.text();
+        console.log(`[upload-imgbb] Response status: ${uploadRes.status}, body: ${responseText.substring(0, 200)}`);
+
+        const uploadData = JSON.parse(responseText) as {
             success: boolean;
             data?: {
                 id: string;
                 url: string;
                 display_url: string;
                 delete_url: string;
-                expiration: number;
             };
             error?: {
                 code: number;
                 message: string;
             };
         };
-
-        console.log(`[upload-imgbb] Response status: ${uploadRes.status}, success: ${uploadData.success}`);
 
         if (!uploadData.success || !uploadData.data?.url) {
             const errorMsg = uploadData.error?.message || 'Unknown error';
@@ -76,7 +75,6 @@ export async function POST(req: Request) {
         return NextResponse.json({
             url: imageUrl,
             display_url: uploadData.data.display_url,
-            expiration: uploadData.data.expiration,
         });
 
     } catch (err: unknown) {
