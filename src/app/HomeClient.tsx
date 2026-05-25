@@ -187,24 +187,20 @@ export default function HomeClient() {
     setGenOpen(true);
 
     try {
-      // Upload files to Supabase storage
+      // Upload files to Supabase storage (public bucket for Replicate)
       const imageUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const path = `${user.id}/${Date.now()}-${i}-${file.name}`;
-        const { error: uploadError } = await supabase.storage.from('selfies').upload(path, file);
+        const path = `input/${user.id}/${Date.now()}-${i}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('headshots').upload(path, file);
         if (uploadError) {
           toast(`Upload failed: ${uploadError.message}`);
           setGenOpen(false);
           return;
         }
-        // Generate signed URL (valid for 1 hour)
-        const { data: signedUrlData } = await supabase.storage
-          .from('selfies')
-          .createSignedUrl(path, 3600);
-        if (signedUrlData?.signedUrl) {
-          imageUrls.push(signedUrlData.signedUrl);
-        }
+        // Get public URL (headshots bucket is public)
+        const { data } = supabase.storage.from('headshots').getPublicUrl(path);
+        imageUrls.push(data.publicUrl);
       }
 
       setGenProgress(15);

@@ -58,22 +58,30 @@ export async function POST(req: Request) {
       });
 
       if (creditError) {
-              // Fallback: manual deduction if RPC does not support p_amount
+              console.error('[generate] RPC error:', creditError);
+              // Fallback: manual deduction if RPC fails
             const { error: manualError } = await adminClient
                 .from('profiles')
                 .update({ credits: profile.credits - CREDITS_PER_GENERATION, updated_at: new Date().toISOString() })
-                .eq('id', user.id)
-                .gte('credits', CREDITS_PER_GENERATION);
+                .eq('id', user.id);
 
             if (manualError) {
+                      console.error('[generate] Manual deduction failed:', manualError);
                       await adminClient.from('packs').delete().eq('id', pack.id);
                       return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
             }
 
-            await adminClient
+            // Log the deduction
+            const { error: logError } = await adminClient
                 .from('credits_log')
                 .insert({ user_id: user.id, delta: -CREDITS_PER_GENERATION, reason: 'generation', pack_id: pack.id });
+
+            if (logError) {
+                      console.error('[generate] Log error:', logError);
+            }
       }
+
+      console.log(`[generate] Created pack ${pack.id} for user ${user.id}, deducted ${CREDITS_PER_GENERATION} credits`);
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
