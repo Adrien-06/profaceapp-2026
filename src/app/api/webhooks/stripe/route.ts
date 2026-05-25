@@ -9,7 +9,7 @@ const PLAN_CREDITS: Record<string, number> = {
     starter: 100,
     pro:     250,
     max:     1000,
-    oneshot: 10,
+    oneshot: 100,
 };
 
 async function addCredits(userId: string | null, email: string | null, credits: number, plan: string, sessionId: string) {

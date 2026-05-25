@@ -27,7 +27,7 @@ const CREDITS: Record<string, number> = {
     starter: 100,
     pro:     250,
     max:     1000,
-    oneshot: 10,
+    oneshot: 100,
 };
 
 export async function GET(req: Request) {

@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
       const adminClient = createServiceClient();
 
-      // Check credits (minimum 3 required)
+      // Check credits
       const { data: profile } = await adminClient
             .from('profiles')
             .select('credits')
@@ -28,13 +28,21 @@ export async function POST(req: Request) {
             .single();
 
       if (!profile || profile.credits < CREDITS_PER_GENERATION) {
-              return NextResponse.json({ error: 'Insufficient credits. You need at least 10 credits to generate a photo.' }, { status: 402 });
+              return NextResponse.json({ error: 'Insufficient credits. You need at least 100 credits to generate a photo.' }, { status: 402 });
       }
 
-      // Create pack record
+      // Get default folder "My Folders"
+      const { data: folder } = await adminClient
+            .from('folders')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('name', 'My Folders')
+            .single();
+
+      // Create pack record in the default folder
       const { data: pack, error: packError } = await adminClient
             .from('packs')
-            .insert({ user_id: user.id, status: 'processing' })
+            .insert({ user_id: user.id, status: 'processing', folder_id: folder?.id })
             .select()
             .single();
 
@@ -42,7 +50,7 @@ export async function POST(req: Request) {
               return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
       }
 
-      // Deduct 3 credits atomically
+      // Deduct 100 credits atomically
       const { error: creditError } = await adminClient.rpc('spend_credit', {
               p_user_id: user.id,
               p_pack_id: pack.id,

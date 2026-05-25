@@ -171,24 +171,107 @@ export default function HomeClient() {
   };
 
   // ── Generate ──
+  const [generatedPhotos, setGeneratedPhotos] = useState<string[]>([]);
+  const [generationPackId, setGenerationPackId] = useState<string | null>(null);
+
   const handleGenerate = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { openAuth('signup'); return; }
     if (!files.length) { toast('Please upload at least one selfie first.'); return; }
+
     setGenProgress(0);
     setGenLabel(GEN_STEPS[0].label);
     setGenDone(false);
+    setGeneratedPhotos([]);
+    setGenerationPackId(null);
     setGenOpen(true);
-    // animate progress (real call would be POST /api/generate)
-    let i = 0;
-    const tick = () => {
-      if (i >= GEN_STEPS.length) { setGenDone(true); return; }
-      const s = GEN_STEPS[i++];
-      setGenProgress(s.p);
-      setGenLabel(s.label);
-      setTimeout(tick, 700 + Math.random() * 500);
-    };
-    tick();
+
+    try {
+      // Upload files to Supabase storage
+      const imageUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const path = `${user.id}/${Date.now()}-${i}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from('selfies').upload(path, file);
+        if (uploadError) {
+          toast(`Upload failed: ${uploadError.message}`);
+          setGenOpen(false);
+          return;
+        }
+        // Generate signed URL (valid for 1 hour)
+        const { data: signedUrlData } = await supabase.storage
+          .from('selfies')
+          .createSignedUrl(path, 3600);
+        if (signedUrlData?.signedUrl) {
+          imageUrls.push(signedUrlData.signedUrl);
+        }
+      }
+
+      setGenProgress(15);
+      setGenLabel('Uploading selfies securely…');
+
+      // Call the generate API
+      const generateRes = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrls }),
+      });
+
+      if (!generateRes.ok) {
+        const { error } = await generateRes.json();
+        toast(error || 'Generation failed');
+        setGenOpen(false);
+        return;
+      }
+
+      const { packId } = await generateRes.json();
+      setGenerationPackId(packId);
+
+      // Poll for completion
+      setGenProgress(30);
+      setGenLabel('Analyzing facial structure…');
+
+      let completed = false;
+      let pollCount = 0;
+      const maxPolls = 120; // 2 minutes with 1s intervals
+
+      while (!completed && pollCount < maxPolls) {
+        await new Promise(r => setTimeout(r, 1000));
+        pollCount++;
+
+        const statusRes = await fetch(`/api/packs/${packId}`);
+        if (!statusRes.ok) continue;
+
+        const pack = await statusRes.json();
+        if (pack.status === 'completed' && pack.photos?.length) {
+          setGeneratedPhotos(pack.photos);
+          setGenProgress(100);
+          setGenLabel('Done.');
+          setGenDone(true);
+          completed = true;
+        } else if (pack.status === 'failed') {
+          toast('Generation failed. Credits have been refunded.');
+          setGenOpen(false);
+          return;
+        } else {
+          // Animate progress
+          const step = Math.min(pollCount, GEN_STEPS.length - 2);
+          if (step < GEN_STEPS.length - 1) {
+            setGenProgress(GEN_STEPS[step].p + (pollCount % 3) * 5);
+            setGenLabel(GEN_STEPS[step].label);
+          }
+        }
+      }
+
+      if (!completed) {
+        toast('Generation timeout. Check your dashboard later.');
+        router.push('/dashboard');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Generation error';
+      toast(msg);
+      setGenOpen(false);
+    }
   };
 
   // ── Pricing checkout ──
@@ -405,7 +488,7 @@ export default function HomeClient() {
         <div className="section-head">
           <span className="kicker">Pricing</span>
           <h2>Simple, transparent pricing.</h2>
-          <p>Each generation costs <strong>10 credits</strong> and produces 3 professional photos. Cancel anytime.</p>
+          <p>Each generation costs <strong>100 credits</strong> and produces professional photos. Cancel anytime.</p>
           <div className="billing-toggle">
             <button className={`bt-opt${billing === 'monthly' ? ' active' : ''}`} onClick={() => setBilling('monthly')}>Monthly</button>
             <button className={`bt-opt${billing === 'yearly' ? ' active' : ''}`} onClick={() => setBilling('yearly')}>
@@ -432,20 +515,20 @@ export default function HomeClient() {
               </button>
               <ul className="features">
                 {plan === 'starter' && <>
-                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month — 10 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month — 1 photo generation</span></li>
                   <li><span className="check">✓</span><span>Standard render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (2048px)</span></li>
                 </>}
                 {plan === 'pro' && <>
-                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month — 25 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month — 2-3 photo generations</span></li>
                   <li><span className="check">✓</span><span>High-likeness AI model</span></li>
                   <li><span className="check">✓</span><span>Priority render queue</span></li>
                   <li><span className="check">✓</span><span>Commercial use license</span></li>
                   <li><span className="check">✓</span><span>4K downloads</span></li>
                 </>}
                 {plan === 'max' && <>
-                  <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 100 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 10 photo generations</span></li>
                   <li><span className="check">✓</span><span>Ultra-high likeness model</span></li>
                   <li><span className="check">✓</span><span>Instant priority rendering</span></li>
                   <li><span className="check">✓</span><span>Team seats & brand presets</span></li>
@@ -456,9 +539,9 @@ export default function HomeClient() {
           ))}
         </div>
         <p className="pricing-foot">
-          Need just one pack?{' '}
+          Need just one generation?{' '}
           <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => handlePlan('oneshot')}>
-            Buy 10 credits for $4.90 — 1 generation
+            Buy 10 credits for $4.90
           </button>{' '}
         </p>
       </section>
@@ -692,9 +775,27 @@ export default function HomeClient() {
                 <h3>Your headshots are ready ✨</h3>
                 <p className="auth-sub">Saved to <strong>My Folders</strong>. Download or share your pack.</p>
                 <div className="result-grid">
-                  <div className="result-img r1"><span className="rl">Boardroom</span></div>
-                  <div className="result-img r2"><span className="rl">Studio</span></div>
-                  <div className="result-img r3"><span className="rl">Outdoor</span></div>
+                  {generatedPhotos.length > 0 ? (
+                    generatedPhotos.map((url, i) => (
+                      <div
+                        key={i}
+                        className="result-img"
+                        style={{
+                          backgroundImage: `url(${url})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                        }}
+                      >
+                        <span className="rl">Photo {i + 1}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="result-img r1"><span className="rl">Boardroom</span></div>
+                      <div className="result-img r2"><span className="rl">Studio</span></div>
+                      <div className="result-img r3"><span className="rl">Outdoor</span></div>
+                    </>
+                  )}
                 </div>
                 <div className="result-actions">
                   <button className="cta" onClick={() => { setGenOpen(false); router.push('/dashboard'); }}>
