@@ -187,20 +187,37 @@ export default function HomeClient() {
     setGenOpen(true);
 
     try {
-      // Upload files to Supabase storage (public bucket for Replicate)
+      // Upload files to imgbb (public, accessible to Replicate)
       const imageUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const path = `input/${user.id}/${Date.now()}-${i}-${file.name}`;
-        const { error: uploadError } = await supabase.storage.from('headshots').upload(path, file);
-        if (uploadError) {
-          toast(`Upload failed: ${uploadError.message}`);
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', file);
+
+        console.log(`[home] Uploading image ${i} to imgbb...`);
+
+        try {
+          const uploadRes = await fetch('/api/upload-imgbb', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          if (!uploadRes.ok) {
+            const error = await uploadRes.json();
+            toast(`Upload failed: ${error.error}`);
+            setGenOpen(false);
+            return;
+          }
+
+          const { url } = await uploadRes.json() as { url: string };
+          imageUrls.push(url);
+          console.log(`[home] Image ${i} uploaded to imgbb: ${url.substring(0, 100)}...`);
+
+        } catch (uploadErr) {
+          toast(`Upload error: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}`);
           setGenOpen(false);
           return;
         }
-        // Get public URL (headshots bucket is public)
-        const { data } = supabase.storage.from('headshots').getPublicUrl(path);
-        imageUrls.push(data.publicUrl);
       }
 
       setGenProgress(15);
