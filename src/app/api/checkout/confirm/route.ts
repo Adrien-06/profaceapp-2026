@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
 
@@ -19,8 +20,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Missing session_id' }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Get user from auth cookies to ensure they're logged in
+  const userClient = await createClient();
+  const { data: { user } } = await userClient.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -47,7 +49,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'No credits to add' }, { status: 400 });
   }
 
-  const { data: profile, error: profileError } = await supabase
+  // Use service client to bypass RLS (we've already verified user is logged in above)
+  const serviceClient = createServiceClient();
+  const { data: profile, error: profileError } = await serviceClient
     .from('profiles')
     .select('credits, credited_stripe_sessions')
     .eq('id', user.id)
@@ -67,7 +71,7 @@ export async function GET(req: Request) {
   const newCredits = (profile.credits ?? 0) + credits;
   const newSessions = [...creditedSessions, sessionId];
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await serviceClient
     .from('profiles')
     .update({
       credits: newCredits,
