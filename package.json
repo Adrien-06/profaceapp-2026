@@ -6,7 +6,10 @@
           "dev": "next dev",
           "build": "next build",
           "start": "next start",
-          "lint": "next lint"
+          "lint": "next lint",
+          "supabase:link": "supabase link",
+          "supabase:migrations": "supabase migration list",
+          "supabase:repair": "echo 'Run this on your local machine where supabase is linked:' && echo 'supabase migration repair --status applied 20250101000000'"
     },
     "dependencies": {
           "@fal-ai/client": "^1.6.0",
