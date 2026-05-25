@@ -21,54 +21,62 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Image too large (max 32MB)' }, { status: 400 });
         }
 
-        console.log(`[upload-imgbb] Uploading image for user ${user.id}, size: ${file.size} bytes`);
+        console.log(`[upload-imgbb] Uploading image for user ${user.id}, size: ${file.size} bytes, type: ${file.type}`);
 
-        // Create FormData for imgbb
-        const imgbbFormData = new FormData();
-        imgbbFormData.append('image', file);
+        // Convert file to base64 for imgbb API
+        const buffer = await file.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString('base64');
+
+        // Create URLSearchParams for imgbb API
+        const imgbbFormData = new URLSearchParams();
+        imgbbFormData.append('image', base64);
         imgbbFormData.append('key', IMGBB_API_KEY);
+        imgbbFormData.append('expiration', '15552000'); // 180 days
+
+        console.log(`[upload-imgbb] Sending to imgbb API...`);
 
         // Upload to imgbb
         const uploadRes = await fetch(IMGBB_UPLOAD_URL, {
             method: 'POST',
-            body: imgbbFormData,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: imgbbFormData.toString(),
         });
 
-        if (!uploadRes.ok) {
-            const errorText = await uploadRes.text();
-            console.error('[upload-imgbb] imgbb error:', uploadRes.status, errorText);
-            return NextResponse.json(
-                { error: `imgbb upload failed: ${uploadRes.status}` },
-                { status: uploadRes.status }
-            );
-        }
-
-        const imgbbResult = await uploadRes.json() as {
+        const uploadData = await uploadRes.json() as {
             success: boolean;
             data?: {
+                id: string;
                 url: string;
                 display_url: string;
                 delete_url: string;
+                expiration: number;
             };
             error?: {
+                code: number;
                 message: string;
             };
         };
 
-        if (!imgbbResult.success || !imgbbResult.data?.url) {
-            console.error('[upload-imgbb] imgbb success false:', imgbbResult);
+        console.log(`[upload-imgbb] Response status: ${uploadRes.status}, success: ${uploadData.success}`);
+
+        if (!uploadData.success || !uploadData.data?.url) {
+            const errorMsg = uploadData.error?.message || 'Unknown error';
+            console.error('[upload-imgbb] imgbb error:', errorMsg);
             return NextResponse.json(
-                { error: 'imgbb upload failed: ' + (imgbbResult.error?.message || 'unknown error') },
+                { error: `imgbb upload failed: ${errorMsg}` },
                 { status: 400 }
             );
         }
 
-        const imageUrl = imgbbResult.data.url;
-        console.log(`[upload-imgbb] Image uploaded to imgbb: ${imageUrl}`);
+        const imageUrl = uploadData.data.url;
+        console.log(`[upload-imgbb] Image uploaded successfully: ${imageUrl}`);
 
         return NextResponse.json({
             url: imageUrl,
-            display_url: imgbbResult.data.display_url,
+            display_url: uploadData.data.display_url,
+            expiration: uploadData.data.expiration,
         });
 
     } catch (err: unknown) {
@@ -77,3 +85,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Upload failed: ' + msg }, { status: 500 });
     }
 }
+
