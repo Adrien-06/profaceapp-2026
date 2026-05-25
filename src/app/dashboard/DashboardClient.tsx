@@ -23,25 +23,25 @@ export default function DashboardClient({ user, profile, packs }: Props) {
   const supabase = createClient();
   const [downloading, setDownloading] = useState<string | null>(null);
 
-    useEffect(() => {
-          const params = new URLSearchParams(window.location.search);
-              const sessionId = params.get('session_id');
-                  if (!sessionId) return;
-                      fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
-                            .then(r => r.json())
-                                  .then(data => {
-                                          if (data.credited) {
-                                                    const url = new URL(window.location.href);
-                                                              url.searchParams.delete('session_id');
-                                                                        url.searchParams.delete('checkout');
-                                                                                  window.history.replaceState({}, '', url.toString());
-                                                                                            router.refresh();
-                                                                                                    }
-                                                                                                          })
-                                                                                                                .catch(() => {});
-                                                                                                                  // eslint-disable-next-line react-hooks/exhaustive-deps
-                                                                                                                    }, []);
-    })
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (!sessionId) return;
+
+    fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.credited) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('session_id');
+          url.searchParams.delete('checkout');
+          window.history.replaceState({}, '', url.toString());
+          router.refresh();
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
