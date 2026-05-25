@@ -11,64 +11,63 @@ const HEADSHOT_PROMPT =
 
 export async function POST(req: Request) {
     try {
-          const supabase = await createClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-      const { imageUrls } = await req.json() as { imageUrls: string[] };
-          if (!imageUrls?.length) return NextResponse.json({ error: 'No image URLs provided' }, { status: 400 });
+        const { imageUrls } = await req.json() as { imageUrls: string[] };
+        if (!imageUrls?.length) return NextResponse.json({ error: 'No image URLs provided' }, { status: 400 });
 
-      const adminClient = createServiceClient();
+        const adminClient = createServiceClient();
 
-      // Check credits
-      const { data: profile } = await adminClient
+        // 1. Check credits
+        const { data: profile } = await adminClient
             .from('profiles')
             .select('credits')
             .eq('id', user.id)
             .single();
 
-      if (!profile || profile.credits < CREDITS_PER_GENERATION) {
-              return NextResponse.json({ error: 'Insufficient credits. You need at least 100 credits to generate a photo.' }, { status: 402 });
-      }
+        if (!profile || profile.credits < CREDITS_PER_GENERATION) {
+            return NextResponse.json({ error: 'Insufficient credits. You need at least 100 credits to generate a photo.' }, { status: 402 });
+        }
 
-      // Get default folder "My Folders"
-      const { data: folder } = await adminClient
+        // 2. Create pack in processing status
+        const { data: folder } = await adminClient
             .from('folders')
             .select('id')
             .eq('user_id', user.id)
             .eq('name', 'My Folders')
             .single();
 
-      // Create pack record in the default folder
-      const { data: pack, error: packError } = await adminClient
+        const { data: pack, error: packError } = await adminClient
             .from('packs')
             .insert({ user_id: user.id, status: 'processing', folder_id: folder?.id })
             .select()
             .single();
 
-      if (packError || !pack) {
-              return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
-      }
+        if (packError || !pack) {
+            return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
+        }
 
-      // Deduct 100 credits atomically
-      const { error: creditError } = await adminClient.rpc('spend_credit', {
-              p_user_id: user.id,
-              p_pack_id: pack.id,
-              p_amount: CREDITS_PER_GENERATION,
-      });
+        // 3. Deduct credits atomically
+        const { error: creditError } = await adminClient.rpc('spend_credit', {
+            p_user_id: user.id,
+            p_pack_id: pack.id,
+            p_amount: CREDITS_PER_GENERATION,
+        });
 
-      if (creditError) {
-              console.error('[generate] RPC error:', creditError);
-              // Fallback: manual deduction if RPC fails
+        if (creditError) {
+            console.error('[generate] RPC error:', creditError);
+            // Fallback: manual deduction if RPC fails
             const { error: manualError } = await adminClient
                 .from('profiles')
                 .update({ credits: profile.credits - CREDITS_PER_GENERATION, updated_at: new Date().toISOString() })
                 .eq('id', user.id);
 
             if (manualError) {
-                      console.error('[generate] Manual deduction failed:', manualError);
-                      await adminClient.from('packs').delete().eq('id', pack.id);
-                      return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
+                console.error('[generate] Manual deduction failed:', manualError);
+                await adminClient.from('packs').delete().eq('id', pack.id);
+                return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
             }
 
             // Log the deduction
@@ -77,40 +76,40 @@ export async function POST(req: Request) {
                 .insert({ user_id: user.id, delta: -CREDITS_PER_GENERATION, reason: 'generation', pack_id: pack.id });
 
             if (logError) {
-                      console.error('[generate] Log error:', logError);
+                console.error('[generate] Log error:', logError);
             }
-      }
+        }
 
-      console.log(`[generate] Created pack ${pack.id} for user ${user.id}, deducted ${CREDITS_PER_GENERATION} credits`);
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://profaceapp.com';
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        // 4. Call Replicate with FLUX-2-DEV (supports Image-to-Image)
+        const prediction = await replicate.predictions.create({
+            model: 'black-forest-labs/flux-2-dev',
+            input: {
+                prompt: HEADSHOT_PROMPT,
+                input_images: [imageUrls[0]],
+                aspect_ratio: 'match_input_image',
+                output_format: 'png',
+                output_quality: 90,
+            },
+            webhook: `${appUrl}/api/webhooks/replicate?packId=${pack.id}`,
+            webhook_events_filter: ['completed'],
+        });
 
-      // Start Replicate prediction with flux-2-pro
-      const prediction = await replicate.predictions.create({
-              model: 'black-forest-labs/flux-2-pro',
-              input: {
-                        prompt: HEADSHOT_PROMPT,
-                        resolution: '1 MP',
-                        aspect_ratio: '3:4',
-                        input_images: [imageUrls[0]],
-                        output_format: 'png',
-                        output_quality: 80,
-                        safety_tolerance: 1,
-              },
-              webhook: `${appUrl}/api/webhooks/replicate?packId=${pack.id}`,
-              webhook_events_filter: ['completed'],
-      });
-
-      // Store prediction id
-      await adminClient
+        // 5. Store prediction ID (never exposed to frontend)
+        await adminClient
             .from('packs')
             .update({ prediction_id: prediction.id })
             .eq('id', pack.id);
 
-      return NextResponse.json({ packId: pack.id, predictionId: prediction.id });
+        console.log(`[generate] Created pack ${pack.id} for user ${user.id}, prediction ${prediction.id}, deducted ${CREDITS_PER_GENERATION} credits`);
+
+        // 🛑 SECURITY: Return only packId (Replicate URL never exposed)
+        return NextResponse.json({ packId: pack.id });
+
     } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : 'Unknown error';
-          console.error('[generate]', msg);
-          return NextResponse.json({ error: msg }, { status: 500 });
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        console.error('[generate]', msg);
+        return NextResponse.json({ error: 'Generation failed to initialize' }, { status: 500 });
     }
 }
