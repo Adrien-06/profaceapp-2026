@@ -20,10 +20,9 @@ async function addCredits(userId: string | null, email: string | null, credits: 
         return false;
   }
 
-  // Prefer user_id (direct UUID lookup), fallback to email
   let query = supabase
       .from('profiles')
-      .select('id, credits')
+      .select('id, credits, credited_stripe_sessions')
       .limit(1);
 
   if (userId) {
@@ -40,11 +39,24 @@ async function addCredits(userId: string | null, email: string | null, credits: 
   }
 
   const profile = profiles[0];
-    const newCredits = (profile.credits ?? 0) + credits;
+  const creditedSessions: string[] = profile.credited_stripe_sessions ?? [];
+
+  // Check if this session was already credited (prevent duplicates)
+  if (creditedSessions.includes(sessionId)) {
+        console.log(`[stripe-webhook] session ${sessionId} already credited, skipping`);
+        return true;
+  }
+
+  const newCredits = (profile.credits ?? 0) + credits;
+  const newSessions = [...creditedSessions, sessionId];
 
   const { error: updateError } = await supabase
       .from('profiles')
-      .update({ credits: newCredits, updated_at: new Date().toISOString() })
+      .update({
+        credits: newCredits,
+        credited_stripe_sessions: newSessions,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', profile.id);
 
   if (updateError) {
@@ -53,6 +65,17 @@ async function addCredits(userId: string | null, email: string | null, credits: 
   }
 
   console.log(`[stripe-webhook] +${credits} credits → user ${profile.id} (plan: ${plan}, session: ${sessionId}). New total: ${newCredits}`);
+
+  // Also log to credits_log for audit trail
+  await supabase
+    .from('credits_log')
+    .insert({
+      user_id: profile.id,
+      delta: credits,
+      reason: 'stripe_checkout',
+      stripe_session_id: sessionId
+    });
+
     return true;
 }
 
