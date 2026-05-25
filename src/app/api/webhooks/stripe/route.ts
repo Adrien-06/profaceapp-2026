@@ -87,14 +87,27 @@ export async function POST(req: Request) {
         const userId  = session.metadata?.user_id ?? null;
         const email   = session.customer_details?.email ?? session.metadata?.user_email ?? null;
         const plan    = session.metadata?.plan ?? 'starter';
-        const credits = parseInt(session.metadata?.credits ?? '0', 10) || PLAN_CREDITS[plan] || 0;
 
-      if (!credits) {
-              console.error('[stripe-webhook] credits = 0, skipping', session.id);
+        // Parse credits from metadata, or use plan defaults
+        let credits = 0;
+        if (session.metadata?.credits) {
+          credits = parseInt(session.metadata.credits, 10);
+        }
+        if (!credits || isNaN(credits)) {
+          credits = PLAN_CREDITS[plan] || 0;
+        }
+
+        console.log(`[stripe-webhook] checkout.session.completed - userId: ${userId}, email: ${email}, plan: ${plan}, credits: ${credits}`);
+
+        if (!credits) {
+              console.error('[stripe-webhook] could not determine credits amount, skipping', { sessionId: session.id, plan, metadata: session.metadata });
               return NextResponse.json({ received: true });
-      }
+        }
 
-      await addCredits(userId, email, credits, plan, session.id);
+        const success = await addCredits(userId, email, credits, plan, session.id);
+        if (!success) {
+          console.error('[stripe-webhook] failed to add credits for session', session.id);
+        }
   }
 
   // ── invoice.payment_succeeded — fires on subscription renewals
