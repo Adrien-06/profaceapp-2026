@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
-import crypto from 'crypto';
 
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
 const CREDITS_PER_GENERATION = 100;
 
 const HEADSHOT_PROMPT =
-    'A professional corporate three-quarter right studio portrait from this selfie, arms crossed, torso position slightly turned on his/her right side, looking directly into the camera with Maintaining the natural mouth shape with slight smile and exact facial expression from the reference image. No added teeth, no exaggerated smile. Wearing a premium tailored matt black business suit with a crisp white shirt. Shot on a high-end medium format camera, 85mm lens, f/2.8 aperture, The lighting is soft and directional (clamshell or light Rembrandt style) against a plain medium united #3D3A3A dark charcoal background. The focus is sharp on her face, with a shallow depth of field. we can see the body to below arms. High-quality corporate portrait photography style Photorealistic, hyper-detailed skin texture, pores, individual hair strands, no too much light reflect on skin or glasses or hair or clothes. high-resolution 8k, commercial advertising photography style.';
+    'Professional corporate studio portrait. Business suit, white shirt. Soft directional lighting against dark background. Sharp focus on face. High-quality commercial photography. 8k photorealistic.';
 
 export async function POST(req: Request) {
     try {
