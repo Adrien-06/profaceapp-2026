@@ -388,22 +388,22 @@ export default function HomeClient() {
               <div className="snap snap-before">
                 <div className="snap-label">Selfie</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/selfie.png" alt="" />
+                <img className="snap-img" src="/hero/selfie.webp" alt="" />
               </div>
               <div className="snap snap-after a1">
                 <div className="snap-label after">Pro · Boardroom</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/boardroom.png" alt="" />
+                <img className="snap-img" src="/hero/boardroom.webp" alt="" />
               </div>
               <div className="snap snap-after a2">
                 <div className="snap-label after">Pro · Studio</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/studio.png" alt="" />
+                <img className="snap-img" src="/hero/studio.webp" alt="" />
               </div>
               <div className="snap snap-after a3">
                 <div className="snap-label after">Pro · Portrait</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/portrait.png" alt="" />
+                <img className="snap-img" src="/hero/portrait.webp" alt="" />
               </div>
               <div className="float-tag tag-1">Crisp focus</div>
               <div className="float-tag tag-2">Studio lighting</div>
@@ -540,16 +540,6 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* ── LOGOS ── */}
-      <section className="logos-strip" aria-label="Used by professionals at">
-        <p>Used by professionals at</p>
-        <div className="logos">
-          {['NORTHWIND', 'Contoso', 'STRIPE&CO', 'Lumen', 'Hyperion', 'Vertex'].map(l => (
-            <span key={l}>{l}</span>
-          ))}
-        </div>
-      </section>
-
       {/* ── TEAMS ── */}
       <section className="pros" id="teams">
         <div className="pros-inner">
@@ -607,7 +597,7 @@ export default function HomeClient() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <svg className="section-wave top dark" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,40 C240,8 480,72 720,40 C960,8 1200,72 1440,40 L1440,80 L0,80 Z" fill="#cbcbcb"/>
+          <path d="M0,40 C240,8 480,72 720,40 C960,8 1200,72 1440,40 L1440,80 L0,80 Z" fill="#e3eeff"/>
         </svg>
         <div className="fc-inner">
           <h2>Your next headshot is ninety seconds away.</h2>
