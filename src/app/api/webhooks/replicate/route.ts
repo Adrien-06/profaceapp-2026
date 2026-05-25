@@ -81,8 +81,13 @@ export async function POST(req: Request) {
                     try {
                         console.log(`[replicate-webhook] Downloading image ${i} from Replicate...`);
 
-                        // Download from Replicate
-                        const imageRes = await fetch(replicateUrl, { timeout: 30000 });
+                        // Download from Replicate with timeout
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                        const imageRes = await fetch(replicateUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+
                         if (!imageRes.ok) {
                             console.error(`[replicate-webhook] Failed to fetch image ${i}: ${imageRes.status}`);
                             continue;
