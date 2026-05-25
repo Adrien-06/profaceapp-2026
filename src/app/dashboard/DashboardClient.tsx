@@ -23,25 +23,24 @@ export default function DashboardClient({ user, profile, packs }: Props) {
   const supabase = createClient();
   const [downloading, setDownloading] = useState<string | null>(null);
 
-    useEffect(() => {
-          const params = new URLSearchParams(window.location.search);
-              const sessionId = params.get('session_id');
-                  if (!sessionId) return;
-                      fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
-                            .then(r => r.json())
-                                  .then(data => {
-                                          if (data.credited) {
-                                                    const url = new URL(window.location.href);
-                                                              url.searchParams.delete('session_id');
-                                                                        url.searchParams.delete('checkout');
-                                                                                  window.history.replaceState({}, '', url.toString());
-                                                                                            router.refresh();
-                                                                                                    }
-                                                                                                          })
-                                                                                                                .catch(() => {});
-                                                                                                                  // eslint-disable-next-line react-hooks/exhaustive-deps
-                                                                                                                    }, []);
-    })
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (!sessionId) return;
+    fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.credited) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('session_id');
+          url.searchParams.delete('checkout');
+          window.history.replaceState({}, '', url.toString());
+          router.refresh();
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -112,7 +111,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
           <div className="stat-card highlight">
             <span className="stat-label">Credits remaining</span>
             <span className="stat-value">{profile.credits}</span>
-            <span className="stat-sub">10 credits = 1 professional photo</span>
+            <span className="stat-sub">100 credits = 1 professional photo</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Packs generated</span>
@@ -126,7 +125,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
           </div>
         </div>
 
-        {profile.credits < 10 && (
+        {profile.credits < 100 && (
           <div style={{
             background: 'var(--blue-50)', border: '1px solid var(--blue-100)',
             borderRadius: 'var(--r-xl)', padding: '20px 24px',
@@ -138,7 +137,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
                 {profile.credits === 0 ? "You're out of credits" : 'Not enough credits'}
               </p>
               <p style={{ color: 'var(--muted)', fontSize: 14, marginTop: 4 }}>
-                You need at least 10 credits to generate a professional headshot.
+                You need at least 100 credits to generate a professional headshot.
               </p>
             </div>
             <a href="/#pricing" className="btn-primary" style={{ whiteSpace: 'nowrap', textDecoration: 'none', padding: '12px 24px', borderRadius: 12 }}>Buy credits</a>
@@ -217,7 +216,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
 
                 {pack.status === 'failed' && (
                   <div style={{ textAlign: 'center', color: '#e55', fontSize: 13, marginTop: 8 }}>
-                    Generation failed. 3 credits refunded.
+                    Generation failed. 100 credits refunded.
                   </div>
                 )}
               </div>

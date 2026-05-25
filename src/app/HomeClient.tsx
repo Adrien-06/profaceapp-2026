@@ -61,6 +61,8 @@ export default function HomeClient() {
   const [genProgress, setGenProgress] = useState(0);
   const [genLabel, setGenLabel] = useState('Initializing…');
   const [genDone, setGenDone] = useState(false);
+  const [genPhotos, setGenPhotos] = useState<string[]>([]);
+  const [genError, setGenError] = useState('');
   // pricing
   const [billing, setBilling] = useState<Billing>('monthly');
   // upload
@@ -175,20 +177,58 @@ export default function HomeClient() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { openAuth('signup'); return; }
     if (!files.length) { toast('Please upload at least one selfie first.'); return; }
+
+    setGenError('');
+    setGenPhotos([]);
+    setGenDone(false);
     setGenProgress(0);
     setGenLabel(GEN_STEPS[0].label);
-    setGenDone(false);
     setGenOpen(true);
-    // animate progress (real call would be POST /api/generate)
+
+    // Animate the progress bar while the request is in flight (stops short of 100%)
     let i = 0;
+    let timer: ReturnType<typeof setTimeout>;
     const tick = () => {
-      if (i >= GEN_STEPS.length) { setGenDone(true); return; }
+      if (i >= GEN_STEPS.length - 1) return;
       const s = GEN_STEPS[i++];
       setGenProgress(s.p);
       setGenLabel(s.label);
-      setTimeout(tick, 700 + Math.random() * 500);
+      timer = setTimeout(tick, 1500 + Math.random() * 1200);
     };
     tick();
+
+    try {
+      // 1. Upload the selfie to the private "selfies" bucket
+      const file = files[0];
+      const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+      const selfiePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('selfies')
+        .upload(selfiePath, file, { contentType: file.type, upsert: false });
+      if (upErr) throw new Error(upErr.message);
+
+      // 2. Ask the server to run fal.ai and store the result
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selfiePath }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
+
+      // 3. Show the generated photo in the popup
+      clearTimeout(timer!);
+      setGenProgress(100);
+      setGenLabel(GEN_STEPS[GEN_STEPS.length - 1].label);
+      setGenPhotos(data.photos ?? []);
+      setGenDone(true);
+    } catch (err) {
+      clearTimeout(timer!);
+      const msg = err instanceof Error ? err.message : 'Something went wrong';
+      setGenError(msg);
+      setGenDone(true);
+      toast(msg);
+    }
   };
 
   // ── Pricing checkout ──
@@ -229,7 +269,11 @@ export default function HomeClient() {
             <a href="#gallery">Gallery</a>
             <button className="btn-ghost" onClick={() => openAuth('login')}>Log in</button>
             <button className="btn-primary" onClick={() => openAuth('signup')}>Sign up</button>
-                            {currentUser && <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding:
+            {currentUser && (
+              <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}>
+                My Folders
+              </a>
+            )}
           </nav>
 
           <button
@@ -687,14 +731,28 @@ export default function HomeClient() {
                 <div className="progress"><div className="progress-bar" style={{ width: `${genProgress}%` }}/></div>
                 <p className="progress-label">{genLabel}</p>
               </div>
+            ) : genError ? (
+              <div>
+                <h3>Generation failed</h3>
+                <p className="auth-sub">{genError} Your credits have been refunded.</p>
+                <div className="result-actions">
+                  <button className="btn-ghost-2" onClick={() => setGenOpen(false)}>Close</button>
+                </div>
+              </div>
             ) : (
               <div>
-                <h3>Your headshots are ready ✨</h3>
-                <p className="auth-sub">Saved to <strong>My Folders</strong>. Download or share your pack.</p>
+                <h3>Your headshot is ready ✨</h3>
+                <p className="auth-sub">Saved to <strong>My Folders</strong>. Download or view your photo.</p>
                 <div className="result-grid">
-                  <div className="result-img r1"><span className="rl">Boardroom</span></div>
-                  <div className="result-img r2"><span className="rl">Studio</span></div>
-                  <div className="result-img r3"><span className="rl">Outdoor</span></div>
+                  {genPhotos.map((url, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={url}
+                      alt={`Headshot ${i + 1}`}
+                      style={{ width: '100%', borderRadius: 12, objectFit: 'cover' }}
+                    />
+                  ))}
                 </div>
                 <div className="result-actions">
                   <button className="cta" onClick={() => { setGenOpen(false); router.push('/dashboard'); }}>
