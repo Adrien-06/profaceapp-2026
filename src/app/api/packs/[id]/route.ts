@@ -3,14 +3,15 @@ import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const packId = params.id;
+    const { id } = await params;
+    const packId = id;
 
     const adminClient = createServiceClient();
     const { data: pack, error } = await adminClient
