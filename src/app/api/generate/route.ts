@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
       const adminClient = createServiceClient();
 
-      // Check credits (minimum 3 required)
+      // Check credits (minimum 100 required)
       const { data: profile } = await adminClient
             .from('profiles')
             .select('credits')
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             .single();
 
       if (!profile || profile.credits < CREDITS_PER_GENERATION) {
-              return NextResponse.json({ error: 'Insufficient credits. You need at least 10 credits to generate a photo.' }, { status: 402 });
+              return NextResponse.json({ error: 'Insufficient credits. You need at least 100 credits to generate a photo.' }, { status: 402 });
       }
 
       // Create pack record
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
               return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
       }
 
-      // Deduct 3 credits atomically
+      // Deduct 100 credits atomically
       const { error: creditError } = await adminClient.rpc('spend_credit', {
               p_user_id: user.id,
               p_pack_id: pack.id,
