@@ -1,100 +1,157 @@
 import { NextResponse } from 'next/server';
-import Replicate from 'replicate';
+import { fal } from '@fal-ai/client';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 
-const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+fal.config({ credentials: process.env.FAL_KEY });
 
 const CREDITS_PER_GENERATION = 100;
 
 const HEADSHOT_PROMPT =
     'A professional corporate three-quarter right studio portrait from this selfie, arms crossed, torso position slightly turned on his/her right side, looking directly into the camera with Maintaining the natural mouth shape with slight smile and exact facial expression from the reference image. No added teeth, no exaggerated smile. Wearing a premium tailored matt black business suit with a crisp white shirt. Shot on a high-end medium format camera, 85mm lens, f/2.8 aperture, The lighting is soft and directional (clamshell or light Rembrandt style) against a plain medium united #3D3A3A dark charcoal background. The focus is sharp on her face, with a shallow depth of field. we can see the body to below arms. High-quality corporate portrait photography style Photorealistic, hyper-detailed skin texture, pores, individual hair strands, no too much light reflect on skin or glasses or hair or clothes. high-resolution 8k, commercial advertising photography style.';
 
+type FalEditOutput = {
+    images?: { url: string }[];
+    seed?: number;
+};
+
 export async function POST(req: Request) {
-    try {
-          const supabase = await createClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-      const { imageUrls } = await req.json() as { imageUrls: string[] };
-          if (!imageUrls?.length) return NextResponse.json({ error: 'No image URLs provided' }, { status: 400 });
+    const { selfiePath } = await req.json() as { selfiePath?: string };
+    if (!selfiePath) return NextResponse.json({ error: 'No selfie provided' }, { status: 400 });
 
-      const adminClient = createServiceClient();
+    // The selfie must belong to the requesting user (path = "<userId>/<file>")
+    if (!selfiePath.startsWith(`${user.id}/`)) {
+        return NextResponse.json({ error: 'Invalid selfie path' }, { status: 403 });
+    }
 
-      // Check credits (minimum 100 required)
-      const { data: profile } = await adminClient
+    const admin = createServiceClient();
+
+    // 1. Check credits (minimum 100 required)
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('credits')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || profile.credits < CREDITS_PER_GENERATION) {
+        return NextResponse.json(
+            { error: 'Insufficient credits. You need at least 100 credits to generate a photo.' },
+            { status: 402 },
+        );
+    }
+
+    // 2. Create a signed URL so fal.ai can fetch the private selfie
+    const { data: signed, error: signErr } = await admin
+        .storage
+        .from('selfies')
+        .createSignedUrl(selfiePath, 60 * 10);
+
+    if (signErr || !signed?.signedUrl) {
+        return NextResponse.json({ error: 'Could not access uploaded selfie' }, { status: 500 });
+    }
+
+    // 3. Create pack record
+    const { data: pack, error: packError } = await admin
+        .from('packs')
+        .insert({ user_id: user.id, status: 'processing' })
+        .select()
+        .single();
+
+    if (packError || !pack) {
+        return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
+    }
+
+    // 4. Deduct 100 credits atomically
+    const { error: spendErr } = await admin
+        .from('profiles')
+        .update({ credits: profile.credits - CREDITS_PER_GENERATION, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
+        .gte('credits', CREDITS_PER_GENERATION);
+
+    if (spendErr) {
+        await admin.from('packs').delete().eq('id', pack.id);
+        return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
+    }
+
+    await admin
+        .from('credits_log')
+        .insert({ user_id: user.id, delta: -CREDITS_PER_GENERATION, reason: 'generation' });
+
+    // Helper: refund credits + mark pack failed if anything below goes wrong
+    const failAndRefund = async (message: string) => {
+        await admin
             .from('profiles')
-            .select('credits')
-            .eq('id', user.id)
-            .single();
-
-      if (!profile || profile.credits < CREDITS_PER_GENERATION) {
-              return NextResponse.json({ error: 'Insufficient credits. You need at least 100 credits to generate a photo.' }, { status: 402 });
-      }
-
-      // Create pack record
-      const { data: pack, error: packError } = await adminClient
+            .update({ credits: profile.credits, updated_at: new Date().toISOString() })
+            .eq('id', user.id);
+        await admin
+            .from('credits_log')
+            .insert({ user_id: user.id, delta: CREDITS_PER_GENERATION, reason: 'refund_failed_generation' });
+        await admin
             .from('packs')
-            .insert({ user_id: user.id, status: 'processing' })
-            .select()
-            .single();
+            .update({ status: 'failed', updated_at: new Date().toISOString() })
+            .eq('id', pack.id);
+        console.error('[generate]', message);
+    };
 
-      if (packError || !pack) {
-              return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
-      }
+    try {
+        // 5. Run Flux 2 Pro edit (img → img) on fal.ai, waiting for the result
+        const result = await fal.subscribe('fal-ai/flux-2-pro/edit', {
+            input: {
+                prompt: HEADSHOT_PROMPT,
+                image_size: 'portrait_4_3',
+                safety_tolerance: '1',
+                enable_safety_checker: true,
+                output_format: 'png',
+                image_urls: [signed.signedUrl],
+            },
+            logs: false,
+        });
 
-      // Deduct 100 credits atomically
-      const { error: creditError } = await adminClient.rpc('spend_credit', {
-              p_user_id: user.id,
-              p_pack_id: pack.id,
-              p_amount: CREDITS_PER_GENERATION,
-      });
+        const data = result.data as FalEditOutput;
+        const outputUrl = data?.images?.[0]?.url;
+        if (!outputUrl) {
+            await failAndRefund('fal.ai returned no image');
+            return NextResponse.json({ error: 'Generation failed', packId: pack.id }, { status: 502 });
+        }
 
-      if (creditError) {
-              // Fallback: manual deduction if RPC does not support p_amount
-            const { error: manualError } = await adminClient
-                .from('profiles')
-                .update({ credits: profile.credits - CREDITS_PER_GENERATION, updated_at: new Date().toISOString() })
-                .eq('id', user.id)
-                .gte('credits', CREDITS_PER_GENERATION);
+        // 6. Download the generated image and store it in the public "headshots" bucket
+        const imgRes = await fetch(outputUrl);
+        if (!imgRes.ok) {
+            await failAndRefund(`Failed to download fal.ai output (${imgRes.status})`);
+            return NextResponse.json({ error: 'Generation failed', packId: pack.id }, { status: 502 });
+        }
+        const bytes = new Uint8Array(await imgRes.arrayBuffer());
+        const storagePath = `${user.id}/${pack.id}.png`;
 
-            if (manualError) {
-                      await adminClient.from('packs').delete().eq('id', pack.id);
-                      return NextResponse.json({ error: 'Insufficient credits' }, { status: 402 });
-            }
+        const { error: uploadErr } = await admin
+            .storage
+            .from('headshots')
+            .upload(storagePath, bytes, { contentType: 'image/png', upsert: true });
 
-            await adminClient
-                .from('credits_log')
-                .insert({ user_id: user.id, delta: -CREDITS_PER_GENERATION, reason: 'generation', pack_id: pack.id });
-      }
+        if (uploadErr) {
+            await failAndRefund(`Storage upload failed: ${uploadErr.message}`);
+            return NextResponse.json({ error: 'Could not save photo', packId: pack.id }, { status: 500 });
+        }
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        const { data: pub } = admin.storage.from('headshots').getPublicUrl(storagePath);
+        const photoUrl = pub.publicUrl;
 
-      // Start Replicate prediction with flux-2-pro
-      const prediction = await replicate.predictions.create({
-              model: 'black-forest-labs/flux-2-pro',
-              input: {
-                        prompt: HEADSHOT_PROMPT,
-                        resolution: '1 MP',
-                        aspect_ratio: '3:4',
-                        input_images: [imageUrls[0]],
-                        output_format: 'png',
-                        output_quality: 80,
-                        safety_tolerance: 1,
-              },
-              webhook: `${appUrl}/api/webhooks/replicate?packId=${pack.id}`,
-              webhook_events_filter: ['completed'],
-      });
-
-      // Store prediction id
-      await adminClient
+        // 7. Mark pack completed
+        await admin
             .from('packs')
-            .update({ prediction_id: prediction.id })
+            .update({ status: 'completed', photos: [photoUrl], updated_at: new Date().toISOString() })
             .eq('id', pack.id);
 
-      return NextResponse.json({ packId: pack.id, predictionId: prediction.id });
+        return NextResponse.json({ packId: pack.id, photos: [photoUrl] });
     } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : 'Unknown error';
-          console.error('[generate]', msg);
-          return NextResponse.json({ error: msg }, { status: 500 });
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        await failAndRefund(msg);
+        return NextResponse.json({ error: msg, packId: pack.id }, { status: 500 });
     }
 }
