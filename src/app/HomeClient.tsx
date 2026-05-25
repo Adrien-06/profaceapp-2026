@@ -47,6 +47,10 @@ export default function HomeClient() {
 
   // nav
   const [navOpen, setNavOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState<{email: string} | null>(null);
+      useEffect(() => {
+          supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user ? { email: user.email ?? '' } : null));
+            }, [supabase]);
   // auth modal
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<AuthTab>('login');
@@ -225,6 +229,7 @@ export default function HomeClient() {
             <a href="#gallery">Gallery</a>
             <button className="btn-ghost" onClick={() => openAuth('login')}>Log in</button>
             <button className="btn-primary" onClick={() => openAuth('signup')}>Sign up</button>
+                            {currentUser && <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding:
           </nav>
 
           <button

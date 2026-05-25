@@ -62,7 +62,7 @@ export async function GET(req: Request) {
                 user_id: user.id,
                 credits: String(CREDITS[plan] ?? 10),
         },
-        success_url: `${appUrl}/dashboard?checkout=success`,
+        success_url: `${appUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url:  `${appUrl}/#pricing`,
   });
 
