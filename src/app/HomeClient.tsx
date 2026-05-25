@@ -267,13 +267,11 @@ export default function HomeClient() {
             <a href="#pricing">Pricing</a>
             <a href="#teams">For teams</a>
             <a href="#gallery">Gallery</a>
+            {currentUser && (
+              <a href="/dashboard" className="nav-dashboard-link">Dashboard</a>
+            )}
             <button className="btn-ghost" onClick={() => openAuth('login')}>Log in</button>
             <button className="btn-primary" onClick={() => openAuth('signup')}>Sign up</button>
-            {currentUser && (
-              <a href="/dashboard" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}>
-                My Folders
-              </a>
-            )}
           </nav>
 
           <button
@@ -293,21 +291,13 @@ export default function HomeClient() {
           <svg className="wave-layer" viewBox="0 0 1440 800" preserveAspectRatio="none">
             <defs>
               <linearGradient id="wG1" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stopColor="#dbe5f2"/>
-                <stop offset="100%" stopColor="#eef3fb"/>
-              </linearGradient>
-              <linearGradient id="wG2" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#b7c6dc" stopOpacity="0.55"/>
-                <stop offset="100%" stopColor="#b7c6dc" stopOpacity="0"/>
+                <stop offset="0%" stopColor="#d7e6fb"/>
+                <stop offset="100%" stopColor="#eef5ff"/>
               </linearGradient>
             </defs>
             <path className="wave wave-1" d="M0,140 C220,260 420,40 700,160 C980,280 1200,80 1440,200 L1440,0 L0,0 Z" fill="url(#wG1)"/>
-            <path className="wave wave-2" d="M0,280 C260,400 460,160 760,300 C1060,440 1240,200 1440,340 L1440,0 L0,0 Z" fill="url(#wG2)"/>
             <path className="wave wave-4" d="M0,800 L0,640 C260,720 540,620 820,700 C1100,780 1280,640 1440,720 L1440,800 Z" fill="#ffffff"/>
           </svg>
-          <div className="blob blob-a"/>
-          <div className="blob blob-b"/>
-          <div className="grid-overlay"/>
         </div>
 
         <div className="hero-container">
@@ -316,10 +306,10 @@ export default function HomeClient() {
               <span className="dot"/>
               AI Headshots · Studio-grade in 90 seconds
             </span>
-            <h1>Generate AI professional shots in seconds.</h1>
+            <h1>Generate professional shots in seconds.</h1>
             <p className="lede">
-              Upload a few selfies and get a pack of <strong>3 studio-quality headshots</strong> ready
-              for LinkedIn, resumes, team pages and press kits. No photographer, no studio.
+              Upload a selfie and get a <strong>studio-quality headshot</strong> ready
+              for LinkedIn, Resumes, Team pages and Press kits. No photographer, no studio.
             </p>
 
             <div className="upload-card">
@@ -397,19 +387,23 @@ export default function HomeClient() {
             <div className="card-stack">
               <div className="snap snap-before">
                 <div className="snap-label">Selfie</div>
-                <div className="snap-img before-img"/>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/selfie.jpg" alt="" />
               </div>
               <div className="snap snap-after a1">
                 <div className="snap-label after">Pro · Boardroom</div>
-                <div className="snap-img after-img a1"/>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/boardroom.jpg" alt="" />
               </div>
               <div className="snap snap-after a2">
                 <div className="snap-label after">Pro · Studio</div>
-                <div className="snap-img after-img a2"/>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/studio.jpg" alt="" />
               </div>
               <div className="snap snap-after a3">
-                <div className="snap-label after">Pro · Outdoor</div>
-                <div className="snap-img after-img a3"/>
+                <div className="snap-label after">Pro · Portrait</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/portrait.jpg" alt="" />
               </div>
               <div className="float-tag tag-1">Crisp focus</div>
               <div className="float-tag tag-2">Studio lighting</div>
@@ -428,9 +422,9 @@ export default function HomeClient() {
         </div>
         <div className="steps">
           {[
-            { n: '01', title: 'Upload selfies', body: '4–10 well-lit photos from different angles. Phone selfies work great.' },
+            { n: '01', title: 'Upload selfies', body: '1–5 well-lit photos from different angles. Phone selfies work great.' },
             { n: '02', title: 'Pick a pack',    body: 'Choose a credit pack and our AI engine renders your shots in the background.' },
-            { n: '03', title: 'Download your shots', body: 'Three polished headshots delivered to My Folders. Download instantly.' },
+            { n: '03', title: 'Download your shot', body: 'Your polished headshot delivered to My Folders. Download instantly.' },
           ].map(s => (
             <div key={s.n} className="step">
               <div className="step-num">{s.n}</div>
@@ -449,7 +443,7 @@ export default function HomeClient() {
         <div className="section-head">
           <span className="kicker">Pricing</span>
           <h2>Simple, transparent pricing.</h2>
-          <p>Each generation costs <strong>10 credits</strong> and produces 3 professional photos. Cancel anytime.</p>
+          <p>Each generation costs <strong>10 credits</strong> and produces 1 professional photo. Cancel anytime.</p>
           <div className="billing-toggle">
             <button className={`bt-opt${billing === 'monthly' ? ' active' : ''}`} onClick={() => setBilling('monthly')}>Monthly</button>
             <button className={`bt-opt${billing === 'yearly' ? ' active' : ''}`} onClick={() => setBilling('yearly')}>
@@ -479,14 +473,14 @@ export default function HomeClient() {
                   <li><span className="check">✓</span><span><strong>100 credits</strong> / month — 10 photos</span></li>
                   <li><span className="check">✓</span><span>Standard render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
-                  <li><span className="check">✓</span><span>HD downloads (2048px)</span></li>
+                  <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'pro' && <>
                   <li><span className="check">✓</span><span><strong>250 credits</strong> / month — 25 photos</span></li>
                   <li><span className="check">✓</span><span>High-likeness AI model</span></li>
                   <li><span className="check">✓</span><span>Priority render queue</span></li>
-                  <li><span className="check">✓</span><span>Commercial use license</span></li>
-                  <li><span className="check">✓</span><span>4K downloads</span></li>
+                  <li><span className="check">✓</span><span>Private My Folders storage</span></li>
+                  <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'max' && <>
                   <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 100 photos</span></li>
