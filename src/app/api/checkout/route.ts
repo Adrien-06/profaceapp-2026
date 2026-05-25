@@ -39,32 +39,32 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-    const plan    = searchParams.get('plan')    ?? 'pro';
-    const billing = searchParams.get('billing') ?? 'monthly';
+  const plan    = (searchParams.get('plan') ?? 'pro') as keyof typeof PRICE_IDS;
+  const billing = (searchParams.get('billing') ?? 'monthly') as 'monthly' | 'yearly';
 
   const priceId = PRICE_IDS[plan]?.[billing];
-    if (!priceId) {
-          return NextResponse.json({ error: 'Invalid plan or billing period' }, { status: 400 });
-    }
+  if (!priceId) {
+    return NextResponse.json({ error: 'Invalid plan or billing period' }, { status: 400 });
+  }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
   const isOneShot = plan === 'oneshot';
 
   const session = await stripe.checkout.sessions.create({
-        mode: isOneShot ? 'payment' : 'subscription',
-        payment_method_types: ['card'],
-        customer_email: user.email,
-        line_items: [{ price: priceId, quantity: 1 }],
-        metadata: {
-                plan,
-                billing,
-                user_id: user.id,
-                user_email: user.email,
-                credits: String(CREDITS[plan] ?? 10),
-        },
-        success_url: `${appUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url:  `${appUrl}/#pricing`,
+    mode: isOneShot ? 'payment' : 'subscription',
+    payment_method_types: ['card'],
+    customer_email: user.email ?? undefined,
+    line_items: [{ price: priceId, quantity: 1 }],
+    metadata: {
+      plan,
+      billing,
+      user_id: user.id,
+      user_email: user.email ?? '',
+      credits: String(CREDITS[plan] ?? 10),
+    },
+    success_url: `${appUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/#pricing`,
   });
 
   return NextResponse.json({ url: session.url });
