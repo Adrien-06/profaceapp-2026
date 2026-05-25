@@ -397,19 +397,23 @@ export default function HomeClient() {
             <div className="card-stack">
               <div className="snap snap-before">
                 <div className="snap-label">Selfie</div>
-                <div className="snap-img before-img"/>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/selfie.webp" alt="" />
               </div>
               <div className="snap snap-after a1">
                 <div className="snap-label after">Pro · Boardroom</div>
-                <div className="snap-img after-img a1"/>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/boardroom.webp" alt="" />
               </div>
               <div className="snap snap-after a2">
-                <div className="snap-label after">Pro · Studio</div>
-                <div className="snap-img after-img a2"/>
+                <div className="snap-label after">Pro · Studio 2</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/studio2.webp" alt="" />
               </div>
               <div className="snap snap-after a3">
-                <div className="snap-label after">Pro · Outdoor</div>
-                <div className="snap-img after-img a3"/>
+                <div className="snap-label after">Pro · Portrait</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="snap-img" src="/hero/portrait.webp" alt="" />
               </div>
               <div className="float-tag tag-1">Crisp focus</div>
               <div className="float-tag tag-2">Studio lighting</div>
