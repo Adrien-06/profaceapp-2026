@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 import DashboardClient from './DashboardClient';
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const authClient = await createClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) redirect('/?auth=login');
 
+  const supabase = createServiceClient();
   const [{ data: profile }, { data: packs }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('packs').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(20),
