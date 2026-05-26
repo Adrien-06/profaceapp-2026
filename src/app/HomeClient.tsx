@@ -49,8 +49,13 @@ export default function HomeClient() {
   const [navOpen, setNavOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<{email: string} | null>(null);
       useEffect(() => {
-          supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user ? { email: user.email ?? '' } : null));
-            }, [supabase]);
+        supabase.auth.getUser().then(({ data: { user } }) => setCurrentUser(user ? { email: user.email ?? '' } : null));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          setCurrentUser(session?.user ? { email: session.user.email ?? '' } : null);
+        });
+        return () => subscription.unsubscribe();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
   // auth modal
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<AuthTab>('login');

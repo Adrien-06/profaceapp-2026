@@ -92,7 +92,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
               <strong style={{ color: 'var(--ink)', fontSize: 14 }}>{profile.credits}</strong>
               <span style={{ color: 'var(--muted)', fontSize: 14 }}>credits remaining</span>
             </div>
-            <a href="#pricing" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}>Buy credits</a>
+            <a href="/#pricing" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}>Buy credits</a>
             <button className="btn-ghost" onClick={handleSignOut} style={{ fontSize: 14 }}>Sign out</button>
           </div>
         </div>
