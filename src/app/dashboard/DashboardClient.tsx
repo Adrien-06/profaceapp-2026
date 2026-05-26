@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback , useEffect} from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -22,11 +22,15 @@ export default function DashboardClient({ user, profile, packs }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [downloading, setDownloading] = useState<string | null>(null);
+  const confirmCalled = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
     if (!sessionId) return;
+    // Guard against React StrictMode double-invocation and any re-render
+    if (confirmCalled.current) return;
+    confirmCalled.current = true;
     fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
       .then(r => r.json())
       .then(data => {
