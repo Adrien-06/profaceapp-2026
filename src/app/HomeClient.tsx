@@ -519,22 +519,21 @@ export default function HomeClient() {
         </div>
         <div className="gallery-grid-new">
           {[
-            { img: '/hero/h2.webp', overlay: '/hero/v2.avif', cap: 'Studio Quality' },
-            { img: '/hero/h9.webp', overlay: '/hero/v9.avif', cap: 'AI Enhanced' },
-            { img: '/hero/h1.webp', overlay: '/hero/v1.jpg', cap: 'Professional Headshot' },
-            { img: '/hero/h11.webp', overlay: '/hero/v11.webp', cap: 'Latest Collection' },
-            { img: '/hero/h6.webp', overlay: '/hero/v6.jpg', cap: 'Professional Appearance' },
-            { img: '/hero/h4.webp', overlay: '/hero/v4.jpg', cap: 'Executive Look' },
-            { img: '/hero/h10.webp', overlay: '/hero/v10.png', cap: 'Premium Quality' },
-            { img: '/hero/h8.webp', overlay: '/hero/v8.png', cap: 'Studio Generated' },
-            { img: '/hero/h7.webp', overlay: '/hero/v7.jpg', cap: 'Business Portrait' },
-            { img: '/hero/h3.webp', overlay: '/hero/v3.jpg', cap: 'Corporate Portrait' },
+            { img: '/hero/s1.png', cap: 'Studio Quality' },
+            { img: '/hero/s2.png', cap: 'AI Enhanced' },
+            { img: '/hero/s3.png', cap: 'Professional Headshot' },
+            { img: '/hero/s4.png', cap: 'Latest Collection' },
+            { img: '/hero/s5.png', cap: 'Professional Appearance' },
+            { img: '/hero/s6.png', cap: 'Executive Look' },
+            { img: '/hero/s7.png', cap: 'Premium Quality' },
+            { img: '/hero/s8.png', cap: 'Studio Generated' },
+            { img: '/hero/s9.png', cap: 'Business Portrait' },
+            { img: '/hero/s10.png', cap: 'Corporate Portrait' },
           ].map((item, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <figure key={i} className="gallery-item">
               <div className="gallery-container">
                 <img src={item.img} alt={item.cap} />
-                {item.overlay && <img src={item.overlay} alt="" className="gallery-overlay" />}
               </div>
               <figcaption>{item.cap}</figcaption>
             </figure>
