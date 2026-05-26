@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
-
-const PLAN_CREDITS: Record<string, number> = {
-  starter: 100,
-  pro: 250,
-  max: 1000,
-  oneshot: 10,
-};
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -37,40 +30,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ credited: false, reason: 'not_paid' });
   }
 
-  const plan = session.metadata?.plan ?? 'starter';
-  const credits = parseInt(session.metadata?.credits ?? '0', 10) || PLAN_CREDITS[plan] || 0;
-
-  if (!credits) {
-    return NextResponse.json({ error: 'No credits to add' }, { status: 400 });
-  }
-
-  // Atomic claim via DB function — prevents race condition with webhook
-  // RPC handles both credit update AND logging, returns true if applied, false if already credited
-  const serviceClient = createServiceClient();
-  const { data: credited, error: rpcError } = await serviceClient.rpc('credit_stripe_session', {
-    p_session_id: sessionId,
-    p_user_id: user.id,
-    p_credits: credits,
-    p_plan: plan,
-  });
-
-  if (rpcError) {
-    console.error('[checkout-confirm] rpc error:', rpcError);
-    return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 });
-  }
-
-  // Fetch updated total for response
-  const { data: profile } = await serviceClient
-    .from('profiles')
-    .select('credits')
-    .eq('id', user.id)
-    .single();
-
-  if (credited) {
-    console.log(`[checkout-confirm] +${credits} credits for user ${user.id} (plan: ${plan})`);
-    return NextResponse.json({ credited: true, credits, newTotal: profile?.credits ?? credits });
-  } else {
-    console.log(`[checkout-confirm] session ${sessionId} already credited, skipping`);
-    return NextResponse.json({ credited: true, already: true });
-  }
+  console.log(`[checkout-confirm] payment confirmed for session ${sessionId} (user: ${user.id})`);
+  return NextResponse.json({ credited: true, message: 'Credits will appear shortly as webhook processes payment' });
 }
