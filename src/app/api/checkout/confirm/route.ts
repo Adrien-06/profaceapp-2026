@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
 
@@ -74,6 +74,14 @@ const PLAN_CREDITS: Record<string, number> = {
                                                                                                                                                   if (updateError) {
                                                                                                                                                       return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 });
                                                                                                                                                         }
+
+                                                                                                                                                          const serviceClient = createServiceClient();
+                                                                                                                                                          await serviceClient.from('credits_log').insert({
+                                                                                                                                                            user_id: user.id,
+                                                                                                                                                            delta: credits,
+                                                                                                                                                            reason: 'stripe_checkout',
+                                                                                                                                                            stripe_session_id: sessionId,
+                                                                                                                                                          });
 
                                                                                                                                                           console.log(`[checkout-confirm] +${credits} credits for user ${user.id} (plan: ${plan}). New total: ${newCredits}`);
 

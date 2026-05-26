@@ -12,7 +12,14 @@ const PLAN_CREDITS: Record<string, number> = {
     oneshot: 10,
 };
 
-async function addCredits(userId: string | null, email: string | null, credits: number, plan: string, sessionId: string) {
+async function addCredits(
+  userId: string | null,
+  email: string | null,
+  credits: number,
+  plan: string,
+  sessionId: string,
+  checkDuplicate = false,
+) {
     const supabase = createServiceClient();
 
   if (!userId && !email) {
@@ -23,7 +30,7 @@ async function addCredits(userId: string | null, email: string | null, credits: 
   // Prefer user_id (direct UUID lookup), fallback to email
   let query = supabase
       .from('profiles')
-      .select('id, credits')
+      .select('id, credits, credited_stripe_sessions')
       .limit(1);
 
   if (userId) {
@@ -40,17 +47,41 @@ async function addCredits(userId: string | null, email: string | null, credits: 
   }
 
   const profile = profiles[0];
-    const newCredits = (profile.credits ?? 0) + credits;
+
+  // Prevent double-crediting with the /checkout/confirm endpoint
+  if (checkDuplicate) {
+    const credited: string[] = profile.credited_stripe_sessions ?? [];
+    if (credited.includes(sessionId)) {
+      console.log(`[stripe-webhook] session ${sessionId} already credited, skipping`);
+      return true;
+    }
+  }
+
+  const newCredits = (profile.credits ?? 0) + credits;
+  const newSessions = checkDuplicate
+    ? [...(profile.credited_stripe_sessions ?? []), sessionId]
+    : profile.credited_stripe_sessions;
 
   const { error: updateError } = await supabase
       .from('profiles')
-      .update({ credits: newCredits, updated_at: new Date().toISOString() })
+      .update({
+        credits: newCredits,
+        updated_at: new Date().toISOString(),
+        ...(checkDuplicate ? { credited_stripe_sessions: newSessions } : {}),
+      })
       .eq('id', profile.id);
 
   if (updateError) {
         console.error('[stripe-webhook] update error:', updateError);
         return false;
   }
+
+  await supabase.from('credits_log').insert({
+    user_id: profile.id,
+    delta: credits,
+    reason: 'stripe_checkout',
+    stripe_session_id: sessionId,
+  });
 
   console.log(`[stripe-webhook] +${credits} credits → user ${profile.id} (plan: ${plan}, session: ${sessionId}). New total: ${newCredits}`);
     return true;
@@ -94,7 +125,7 @@ export async function POST(req: Request) {
               return NextResponse.json({ received: true });
       }
 
-      await addCredits(userId, email, credits, plan, session.id);
+      await addCredits(userId, email, credits, plan, session.id, true);
   }
 
   // ── invoice.payment_succeeded — fires on subscription renewals
