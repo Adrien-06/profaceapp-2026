@@ -524,7 +524,7 @@ export default function HomeClient() {
             { img: '/hero/h1.webp', overlay: '/hero/v1.jpg', cap: 'Professional Headshot' },
             { img: '/hero/h11.webp', overlay: '/hero/v11.webp', cap: 'Latest Collection' },
             { img: '/hero/h6.webp', overlay: '/hero/v6.jpg', cap: 'Professional Appearance' },
-            { img: '/hero/h4.webp', overlay: '/hero/v3.jpg', cap: 'Executive Look' },
+            { img: '/hero/h4.webp', overlay: '/hero/v4.jpg', cap: 'Executive Look' },
             { img: '/hero/h10.webp', overlay: '/hero/v10.png', cap: 'Premium Quality' },
             { img: '/hero/h8.webp', overlay: '/hero/v8.png', cap: 'Studio Generated' },
             { img: '/hero/h7.webp', overlay: '/hero/v7.jpg', cap: 'Business Portrait' },
