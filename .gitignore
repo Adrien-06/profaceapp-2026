@@ -22,3 +22,4 @@ yarn-error.log*
 
 # MCP config (contains secrets)
 .mcp.json
+tsconfig.tsbuildinfo
