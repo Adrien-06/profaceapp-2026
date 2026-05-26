@@ -16,9 +16,15 @@ const PRICES = {
 };
 
 const BILLED = {
-  starter: { monthly: 'Billed monthly', yearly: 'Billed $182/year'  },
+  starter: { monthly: 'Billed monthly', yearly: 'Billed $180/year'  },
   pro:     { monthly: 'Billed monthly', yearly: 'Billed $276/year' },
   max:     { monthly: 'Billed monthly', yearly: 'Billed $948/year' },
+};
+
+const SAVINGS = {
+  starter: { annual: 228, discounted: 180, save: 48 },
+  pro:     { annual: 348, discounted: 276, save: 72 },
+  max:     { annual: 1188, discounted: 948, save: 240 },
 };
 
 const GEN_STEPS = [
@@ -470,6 +476,12 @@ export default function HomeClient() {
                 <span className="per">{billing === 'yearly' ? '/mo, billed yearly' : '/month'}</span>
               </div>
               <p className="billed">{BILLED[plan][billing]}</p>
+              {billing === 'yearly' && (
+                <div className="savings-badge">
+                  <span className="savings-label">Save ${SAVINGS[plan].save}</span>
+                  <span className="savings-sub">with annual billing</span>
+                </div>
+              )}
               <button className={`plan-btn${plan === 'pro' ? ' primary' : ''}`} onClick={() => handlePlan(plan)}>
                 {plan === 'starter' ? 'Get Starter' : plan === 'pro' ? 'Subscribe to Pro' : 'Subscribe to Max'}
               </button>
