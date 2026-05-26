@@ -576,6 +576,23 @@ ul { margin:0; padding:0; list-style:none; }
 }
 .gallery-item:hover figcaption { transform:translateY(0); opacity:1; }
 
+.gallery-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.gallery-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 35%;
+  height: 35%;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(15,26,43,.12);
+}
+
 .gallery-grid {
   max-width:var(--max); margin:0 auto;
   display:grid; grid-template-columns:repeat(12,1fr);
