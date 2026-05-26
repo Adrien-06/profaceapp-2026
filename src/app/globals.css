@@ -387,7 +387,7 @@ ul { margin:0; padding:0; list-style:none; }
 .snap-before { width:180px; left:0; top:30px; transform:rotate(-6deg); z-index:2; }
 .snap-after.a1 { width:280px; left:130px; top:50px; z-index:3; }
 .snap-after.a2 { width:200px; right:20px; top:0; transform:rotate(5deg); z-index:2; }
-.snap-after.a3 { width:220px; right:60px; bottom:0; transform:rotate(-3deg); z-index:2; }
+.snap-after.a3 { width:220px; left:80px; bottom:0; transform:rotate(-3deg); z-index:5; }
 .float-tag {
   position:absolute; background:#fff; color:var(--ink);
   font-size:12px; font-weight:500;
