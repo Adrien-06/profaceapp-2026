@@ -534,7 +534,6 @@ export default function HomeClient() {
             <figure key={i} className="gallery-item">
               <div className="gallery-container">
                 <img src={item.img} alt={item.cap} />
-                {item.overlay && <img src={item.overlay} alt="" className="gallery-overlay" />}
               </div>
               <figcaption>{item.cap}</figcaption>
             </figure>
