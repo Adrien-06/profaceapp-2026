@@ -11,8 +11,8 @@ type Billing = 'monthly' | 'yearly';
 
 const PRICES = {
   oneshot: { monthly: 29,  yearly: 29 },
-  pro:     { monthly: 49, yearly: 469 },
-  max:     { monthly: 99, yearly: 949 },
+  pro:     { monthly: 49, yearly: 39 },
+  max:     { monthly: 99, yearly: 79 },
 };
 
 const BILLED = {
@@ -659,14 +659,6 @@ export default function HomeClient() {
               <li><a href="#">Privacy policy</a></li>
               <li><a href="#">Terms of service</a></li>
               <li><a href="#">Cookies</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Follow</h4>
-            <ul className="social">
-              <li><a href="#">X / Twitter</a></li>
-              <li><a href="#">LinkedIn</a></li>
-              <li><a href="#">Instagram</a></li>
             </ul>
           </div>
         </div>

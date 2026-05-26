@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ProFaceApp — AI Professional Headshots in Seconds',
+  title: 'Proface app | professional shots in seconds',
   description: 'Generate studio-quality AI professional headshots in seconds. Upload selfies, get 1 polished portrait for LinkedIn, resumes & team pages.',
   icons: {
     icon: '/hero/favicon.png',
