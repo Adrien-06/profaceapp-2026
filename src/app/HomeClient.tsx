@@ -519,17 +519,16 @@ export default function HomeClient() {
         </div>
         <div className="gallery-grid-new">
           {[
-            { img: '/hero/h1.webp', cap: 'Professional Headshot' },
             { img: '/hero/h2.webp', cap: 'Studio Quality' },
-            { img: '/hero/h3.webp', cap: 'Corporate Portrait' },
-            { img: '/hero/h4.webp', cap: 'Executive Look' },
-            { img: '/hero/h5.webp', cap: 'Boardroom Style' },
-            { img: '/hero/h6.webp', cap: 'Professional Appearance' },
-            { img: '/hero/h7.webp', cap: 'Business Portrait' },
-            { img: '/hero/h8.webp', cap: 'Studio Generated' },
             { img: '/hero/h9.webp', cap: 'AI Enhanced' },
-            { img: '/hero/h10.webp', cap: 'Premium Quality' },
+            { img: '/hero/h1.webp', cap: 'Professional Headshot' },
             { img: '/hero/h11.webp', cap: 'Latest Collection' },
+            { img: '/hero/h6.webp', cap: 'Professional Appearance' },
+            { img: '/hero/h4.webp', cap: 'Executive Look' },
+            { img: '/hero/h10.webp', cap: 'Premium Quality' },
+            { img: '/hero/h8.webp', cap: 'Studio Generated' },
+            { img: '/hero/h7.webp', cap: 'Business Portrait' },
+            { img: '/hero/h3.webp', cap: 'Corporate Portrait' },
           ].map((item, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <figure key={i} className="gallery-item"><img src={item.img} alt={item.cap} /><figcaption>{item.cap}</figcaption></figure>
