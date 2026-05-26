@@ -392,7 +392,7 @@ ul { margin:0; padding:0; list-style:none; }
   position:absolute; background:#fff; color:var(--ink);
   font-size:12px; font-weight:500;
   padding:8px 12px; border-radius:999px;
-  border:1px solid var(--line); box-shadow:var(--shadow-md); z-index:4;
+  border:1px solid var(--line); box-shadow:var(--shadow-md); z-index:10;
 }
 .float-tag::before { content:"✦"; color:var(--blue); margin-right:6px; }
 .tag-1 { bottom:70px; right:30px; }
