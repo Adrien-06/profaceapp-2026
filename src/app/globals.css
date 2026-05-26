@@ -585,8 +585,8 @@ ul { margin:0; padding:0; list-style:none; }
   position: absolute;
   bottom: 8px;
   right: 8px;
-  width: 35%;
-  height: 35%;
+  width: 28%;
+  aspect-ratio: 3/4;
   border-radius: 8px;
   object-fit: cover;
   border: 2px solid #fff;
