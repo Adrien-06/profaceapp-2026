@@ -381,7 +381,7 @@ ul { margin:0; padding:0; list-style:none; }
   background:var(--blue); color:#fff;
   box-shadow:0 6px 16px rgba(11,102,228,.4);
 }
-.snap-img { width:100%; height:auto; border-radius:16px; display:block; box-shadow:0 16px 44px rgba(15,26,43,.22); transition:transform .5s var(--ease-out), box-shadow .5s var(--ease-out); will-change:transform; }
+.snap-img { width:100%; height:auto; border-radius:16px; display:block; border:3px solid rgba(255,255,255,0.9); box-shadow:0 16px 44px rgba(15,26,43,.22); transition:transform .5s var(--ease-out), box-shadow .5s var(--ease-out); will-change:transform; }
 .snap:hover { z-index:20 !important; }
 .snap:hover .snap-img { transform:scale(1.07) translateY(-6px); box-shadow:0 28px 60px rgba(15,26,43,.32); }
 .snap-before { width:180px; left:0; top:30px; transform:rotate(-6deg); z-index:2; }

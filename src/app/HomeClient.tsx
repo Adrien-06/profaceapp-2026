@@ -396,9 +396,9 @@ export default function HomeClient() {
                 <img className="snap-img" src="/hero/boardroom.webp" alt="" />
               </div>
               <div className="snap snap-after a2">
-                <div className="snap-label after">Pro · Studio</div>
+                <div className="snap-label after">Pro · Studio 2</div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="snap-img" src="/hero/studio.webp" alt="" />
+                <img className="snap-img" src="/hero/studio2.webp" alt="" />
               </div>
               <div className="snap snap-after a3">
                 <div className="snap-label after">Pro · Portrait</div>
