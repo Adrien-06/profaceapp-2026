@@ -45,6 +45,7 @@ export async function GET(req: Request) {
   }
 
   // Atomic claim via DB function — prevents race condition with webhook
+  // RPC handles both credit update AND logging, returns true if applied, false if already credited
   const serviceClient = createServiceClient();
   const { data: credited, error: rpcError } = await serviceClient.rpc('credit_stripe_session', {
     p_session_id: sessionId,
@@ -58,11 +59,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 });
   }
 
-  if (!credited) {
-    console.log(`[checkout-confirm] session ${sessionId} already credited, skipping`);
-    return NextResponse.json({ credited: true, already: true });
-  }
-
   // Fetch updated total for response
   const { data: profile } = await serviceClient
     .from('profiles')
@@ -70,13 +66,11 @@ export async function GET(req: Request) {
     .eq('id', user.id)
     .single();
 
-  await serviceClient.from('credits_log').insert({
-    user_id: user.id,
-    delta: credits,
-    reason: 'stripe_checkout',
-    stripe_session_id: sessionId,
-  });
-
-  console.log(`[checkout-confirm] +${credits} credits for user ${user.id} (plan: ${plan})`);
-  return NextResponse.json({ credited: true, credits, newTotal: profile?.credits ?? credits });
+  if (credited) {
+    console.log(`[checkout-confirm] +${credits} credits for user ${user.id} (plan: ${plan})`);
+    return NextResponse.json({ credited: true, credits, newTotal: profile?.credits ?? credits });
+  } else {
+    console.log(`[checkout-confirm] session ${sessionId} already credited, skipping`);
+    return NextResponse.json({ credited: true, already: true });
+  }
 }

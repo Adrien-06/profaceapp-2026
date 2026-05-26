@@ -42,6 +42,7 @@ async function addCredits(
   const profileId: string = profiles[0].id;
 
   // Atomic claim via DB function — prevents race condition with /confirm endpoint
+  // RPC handles both credit update AND logging, returns true if applied, false if already credited
   const { data: credited, error: rpcError } = await supabase.rpc('credit_stripe_session', {
     p_session_id: sessionId,
     p_user_id: profileId,
@@ -54,19 +55,12 @@ async function addCredits(
     return false;
   }
 
-  if (!credited) {
+  if (credited) {
+    console.log(`[stripe-webhook] +${credits} credits → user ${profileId} (plan: ${plan}, session: ${sessionId})`);
+  } else {
     console.log(`[stripe-webhook] session ${sessionId} already credited, skipping`);
-    return true;
   }
 
-  await supabase.from('credits_log').insert({
-    user_id: profileId,
-    delta: credits,
-    reason: 'stripe_checkout',
-    stripe_session_id: sessionId,
-  });
-
-  console.log(`[stripe-webhook] +${credits} credits → user ${profileId} (plan: ${plan}, session: ${sessionId})`);
   return true;
 }
 
