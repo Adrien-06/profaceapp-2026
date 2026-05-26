@@ -769,11 +769,23 @@ export default function HomeClient() {
             <button className="close-modal" onClick={() => setContactOpen(false)}>×</button>
             <h3>Get in touch</h3>
             <p className="auth-sub">Let's talk about how ProFaceApp can help your team.</p>
-            <form className="auth-form active" onSubmit={(e) => {
+            <form className="auth-form active" onSubmit={async (e) => {
               e.preventDefault();
-              toast(`Thanks ${contactForm.name}! We'll contact you at ${contactForm.email}`);
-              setContactForm({ name: '', email: '' });
-              setContactOpen(false);
+              try {
+                const res = await fetch('/api/contact', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(contactForm),
+                });
+                if (res.ok) {
+                  window.location.href = `mailto:support@profaceapp.com?subject=Contact from ${encodeURIComponent(contactForm.name)}&body=Name: ${encodeURIComponent(contactForm.name)}%0AEmail: ${encodeURIComponent(contactForm.email)}`;
+                  toast(`Message sent! We'll contact you at ${contactForm.email}`);
+                  setContactForm({ name: '', email: '' });
+                  setContactOpen(false);
+                }
+              } catch (error) {
+                toast('Failed to send message');
+              }
             }}>
               <label className="input-group"><span>Name</span><input type="text" placeholder="Your name" value={contactForm.name} onChange={e => setContactForm(prev => ({ ...prev, name: e.target.value }))} required /></label>
               <label className="input-group"><span>Email</span><input type="email" placeholder="you@company.com" value={contactForm.email} onChange={e => setContactForm(prev => ({ ...prev, email: e.target.value }))} required /></label>
