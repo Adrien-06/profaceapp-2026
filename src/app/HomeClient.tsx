@@ -78,6 +78,9 @@ export default function HomeClient() {
   const [toastMsg, setToastMsg] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // contact modal
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '' });
 
   // ── Toast ──
   const toast = useCallback((msg: string) => {
@@ -114,7 +117,7 @@ export default function HomeClient() {
   // ── ESC closes modals ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setAuthOpen(false); setGenOpen(false); }
+      if (e.key === 'Escape') { setAuthOpen(false); setGenOpen(false); setContactOpen(false); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -122,8 +125,8 @@ export default function HomeClient() {
 
   // ── Body overflow when modal open ──
   useEffect(() => {
-    document.body.style.overflow = (authOpen || genOpen) ? 'hidden' : '';
-  }, [authOpen, genOpen]);
+    document.body.style.overflow = (authOpen || genOpen || contactOpen) ? 'hidden' : '';
+  }, [authOpen, genOpen, contactOpen]);
 
   // ── Auth handlers ──
   const openAuth = useCallback((tab: AuthTab) => {
@@ -514,18 +517,22 @@ export default function HomeClient() {
           <h2>Real selfies. Real upgrades.</h2>
           <p>A few of the 420,000+ headshots delivered last quarter.</p>
         </div>
-        <div className="gallery-grid">
+        <div className="gallery-grid-new">
           {[
-            { cls: 'g1', cap: 'Sales · Boardroom' },
-            { cls: 'g2', cap: 'Engineering · Studio' },
-            { cls: 'g3', cap: 'Founder · Outdoor' },
-            { cls: 'g4', cap: 'Designer · Editorial' },
-            { cls: 'g5', cap: 'Marketing · Soft' },
-            { cls: 'g6', cap: 'Legal · Classic' },
-            { cls: 'g7', cap: 'Consultant · Warm' },
-            { cls: 'g8', cap: 'Executive · Mono' },
-          ].map(({ cls, cap }) => (
-            <figure key={cls} className={`g ${cls}`}><figcaption>{cap}</figcaption></figure>
+            { img: '/hero/h1.webp', cap: 'Professional Headshot' },
+            { img: '/hero/h2.webp', cap: 'Studio Quality' },
+            { img: '/hero/h3.webp', cap: 'Corporate Portrait' },
+            { img: '/hero/h4.webp', cap: 'Executive Look' },
+            { img: '/hero/h5.webp', cap: 'Boardroom Style' },
+            { img: '/hero/h6.webp', cap: 'Professional Appearance' },
+            { img: '/hero/h7.webp', cap: 'Business Portrait' },
+            { img: '/hero/h8.webp', cap: 'Studio Generated' },
+            { img: '/hero/h9.webp', cap: 'AI Enhanced' },
+            { img: '/hero/h10.webp', cap: 'Premium Quality' },
+            { img: '/hero/h11.webp', cap: 'Latest Collection' },
+          ].map((item, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <figure key={i} className="gallery-item"><img src={item.img} alt={item.cap} /><figcaption>{item.cap}</figcaption></figure>
           ))}
         </div>
         <div className="testimonials">
@@ -645,7 +652,7 @@ export default function HomeClient() {
             <ul>
               <li><a href="#">About</a></li>
               <li><a href="#">Press kit</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><button style={{ background:'none', border:'none', color:'var(--blue)', cursor:'pointer', fontSize:14, padding:0, textAlign:'left' }} onClick={() => setContactOpen(true)}>Contact</button></li>
             </ul>
           </div>
           <div>
@@ -752,6 +759,27 @@ export default function HomeClient() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── CONTACT MODAL ── */}
+      {contactOpen && (
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setContactOpen(false); }}>
+          <div className="modal-content" role="dialog" aria-modal="true">
+            <button className="close-modal" onClick={() => setContactOpen(false)}>×</button>
+            <h3>Get in touch</h3>
+            <p className="auth-sub">Let's talk about how ProFaceApp can help your team.</p>
+            <form className="auth-form active" onSubmit={(e) => {
+              e.preventDefault();
+              toast(`Thanks ${contactForm.name}! We'll contact you at ${contactForm.email}`);
+              setContactForm({ name: '', email: '' });
+              setContactOpen(false);
+            }}>
+              <label className="input-group"><span>Name</span><input type="text" placeholder="Your name" value={contactForm.name} onChange={e => setContactForm(prev => ({ ...prev, name: e.target.value }))} required /></label>
+              <label className="input-group"><span>Email</span><input type="email" placeholder="you@company.com" value={contactForm.email} onChange={e => setContactForm(prev => ({ ...prev, email: e.target.value }))} required /></label>
+              <button type="submit" className="cta"><span>Send message</span></button>
+            </form>
           </div>
         </div>
       )}
