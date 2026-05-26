@@ -424,7 +424,7 @@ export default function HomeClient() {
           {[
             { n: '01', title: 'Upload selfies', body: '1–5 well-lit photos from different angles. Phone selfies work great.' },
             { n: '02', title: 'Pick a pack',    body: 'Choose a credit pack and our AI engine renders your shots in the background.' },
-            { n: '03', title: 'Download your shot', body: 'Your polished headshot delivered to My Folders. Download instantly.' },
+            { n: '03', title: 'Download your shot', body: 'Your polished headshot delivered to your dashboard. Download instantly.' },
           ].map(s => (
             <div key={s.n} className="step">
               <div className="step-num">{s.n}</div>
@@ -470,20 +470,20 @@ export default function HomeClient() {
               </button>
               <ul className="features">
                 {plan === 'starter' && <>
-                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month — 10 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month</span></li>
                   <li><span className="check">✓</span><span>Standard render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'pro' && <>
-                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month — 25 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month</span></li>
                   <li><span className="check">✓</span><span>High-likeness AI model</span></li>
                   <li><span className="check">✓</span><span>Priority render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'max' && <>
-                  <li><span className="check">✓</span><span><strong>1000 credits</strong> / month — 100 photos</span></li>
+                  <li><span className="check">✓</span><span><strong>1,000 credits</strong> / month</span></li>
                   <li><span className="check">✓</span><span>Ultra-high likeness model</span></li>
                   <li><span className="check">✓</span><span>Instant priority rendering</span></li>
                   <li><span className="check">✓</span><span>Dedicated support</span></li>
@@ -582,7 +582,7 @@ export default function HomeClient() {
 
           <div className="pros-banner">
             <div className="pros-banner-text">
-              <h3>Need more than 1000 credits a month?</h3>
+              <h3>Need more than 1,000 credits a month?</h3>
               <p>We work with agencies and enterprises on custom packages, dedicated rendering capacity and SSO.</p>
             </div>
             <div className="pros-banner-stats">
@@ -601,7 +601,7 @@ export default function HomeClient() {
         </svg>
         <div className="fc-inner">
           <h2>Your next headshot is ninety seconds away.</h2>
-          <p>Three professional photos, delivered to <em>My Folders</em>. No studio, no waiting.</p>
+          <p>Professional photos, delivered instantly. No studio, no waiting.</p>
           <button className="cta" style={{ maxWidth: 360, margin: '0 auto' }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <span>Upload selfies &amp; generate</span>
             <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor"><path d="M3 10h12.2l-4.6-4.6 1.4-1.4L19 10l-7 7-1.4-1.4 4.6-4.6H3z"/></svg>

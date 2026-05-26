@@ -163,7 +163,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
               <div key={pack.id} className="pack-card">
                 <div className="pack-photos">
                   {pack.photos && pack.photos.length > 0
-                    ? pack.photos.map((url, i) => (
+                    ? pack.photos.slice(0, 1).map((url, i) => (
                         <div key={i} className="pack-photo" style={{ position: 'relative' }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={url} alt={`Headshot ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
@@ -181,7 +181,7 @@ export default function DashboardClient({ user, profile, packs }: Props) {
                           </button>
                         </div>
                       ))
-                    : [0, 1, 2].map(i => (
+                    : [0].map(i => (
                         <div key={i} className="pack-photo" style={{ background: '#e0e0e0', borderRadius: 8 }} />
                       ))
                   }
