@@ -338,7 +338,7 @@ export default function HomeClient() {
                     </svg>
                   </div>
                   <p className="dz-title"><strong>Drop your selfies here</strong> or click to upload</p>
-                  <p className="dz-sub">JPG, PNG or WEBP · 4–10 photos · 20MB max each</p>
+                  <p className="dz-sub">JPG, PNG or WEBP · 1 - 10 photos · 20MB max each</p>
                 </div>
                 <input
                   ref={fileInputRef}
