@@ -6,9 +6,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10
 
 // Test-mode Stripe price IDs as fallback when env vars are not set
 const TEST_PRICE_IDS = {
-  oneshot: { monthly: 'price_1PLACEHOLDER1', yearly: 'price_1PLACEHOLDER1' },
-  pro:     { monthly: 'price_1PLACEHOLDER2', yearly: 'price_1PLACEHOLDER3' },
-  max:     { monthly: 'price_1PLACEHOLDER4', yearly: 'price_1PLACEHOLDER5' },
+  oneshot: { monthly: 'price_1TbPmdFI9TKZo7n9wiFUw0yn', yearly: 'price_1TbPmdFI9TKZo7n9wiFUw0yn' },
+  pro:     { monthly: 'price_1TbPmgFI9TKZo7n9WPwnXeLw', yearly: 'price_1TbPmiFI9TKZo7n9uVTNUHQY' },
+  max:     { monthly: 'price_1TbPmlFI9TKZo7n9RfAwyPSm', yearly: 'price_1TbPmnFI9TKZo7n9nsV2KUDr' },
 } as const;
 
 const PRICE_IDS: Record<string, Record<string, string>> = {
