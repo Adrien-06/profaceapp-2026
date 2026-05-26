@@ -395,8 +395,8 @@ ul { margin:0; padding:0; list-style:none; }
   border:1px solid var(--line); box-shadow:var(--shadow-md); z-index:4;
 }
 .float-tag::before { content:"✦"; color:var(--blue); margin-right:6px; }
-.tag-1 { top:8px; left:100px; }
-.tag-2 { bottom:230px; left:-10px; }
+.tag-1 { top:200px; right:80px; }
+.tag-2 { bottom:120px; right:20px; }
 .tag-3 { bottom:60px; right:-10px; }
 
 /* ── LOGOS ── */

@@ -78,6 +78,10 @@ export default function HomeClient() {
   const [toastMsg, setToastMsg] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // contact modal
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '' });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
 
   // ── Toast ──
   const toast = useCallback((msg: string) => {
@@ -245,6 +249,29 @@ export default function HomeClient() {
     const { url, error } = await res.json();
     if (error) { toast(error); return; }
     if (url) window.location.href = url;
+  };
+
+  // ── Contact form ──
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setContactSubmitting(true);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
+      toast('Message sent successfully!');
+      setContactForm({ name: '', email: '' });
+      setContactOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to send message';
+      toast(msg);
+    } finally {
+      setContactSubmitting(false);
+    }
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -645,7 +672,7 @@ export default function HomeClient() {
             <ul>
               <li><a href="#">About</a></li>
               <li><a href="#">Press kit</a></li>
-              <li><a href="#">Contact</a></li>
+              <li><button style={{ background:'none', border:'none', color:'var(--blue)', cursor:'pointer', fontSize:14, padding:0 }} onClick={() => setContactOpen(true)}>Contact</button></li>
             </ul>
           </div>
           <div>
@@ -752,6 +779,24 @@ export default function HomeClient() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── CONTACT MODAL ── */}
+      {contactOpen && (
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setContactOpen(false); }}>
+          <div className="modal-content" role="dialog" aria-modal="true">
+            <button className="close-modal" onClick={() => setContactOpen(false)}>×</button>
+            <div className="modal-contact">
+              <h3>Get in touch</h3>
+              <p className="auth-sub">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+              <form className="auth-form active" onSubmit={handleContactSubmit}>
+                <label className="input-group"><span>Name</span><input type="text" placeholder="Your name" value={contactForm.name} onChange={e => setContactForm({ ...contactForm, name: e.target.value })} required /></label>
+                <label className="input-group"><span>Email</span><input type="email" placeholder="your@email.com" value={contactForm.email} onChange={e => setContactForm({ ...contactForm, email: e.target.value })} required /></label>
+                <button type="submit" className="cta" disabled={contactSubmitting}><span>{contactSubmitting ? 'Sending…' : 'Send message'}</span></button>
+              </form>
+            </div>
           </div>
         </div>
       )}
