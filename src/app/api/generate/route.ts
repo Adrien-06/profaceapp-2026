@@ -9,7 +9,7 @@ export const maxDuration = 300;
 // hosting dashboard — strip them so the Authorization header is well-formed.
 const FAL_KEY = (process.env.FAL_KEY ?? '').trim().replace(/^["']|["']$/g, '');
 
-const CREDITS_PER_GENERATION = 100;
+const CREDITS_PER_GENERATION = 10;
 
 const HEADSHOT_PROMPT =
     'A professional corporate three-quarter right studio portrait from this selfie, arms crossed, torso position slightly turned on his/her right side, looking directly into the camera with Maintaining the natural mouth shape with slight smile and exact facial expression from the reference image. No added teeth, no exaggerated smile. Wearing a premium tailored matt black business suit with a crisp white shirt. Shot on a high-end medium format camera, 85mm lens, f/2.8 aperture, The lighting is soft and directional (clamshell or light Rembrandt style) against a plain medium united #3D3A3A dark charcoal background. The focus is sharp on her face, with a shallow depth of field. we can see the body to below arms. High-quality corporate portrait photography style Photorealistic, hyper-detailed skin texture, pores, individual hair strands, no too much light reflect on skin or glasses or hair or clothes. high-resolution 8k, commercial advertising photography style.';
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
     const admin = createServiceClient();
 
-    // 1. Check credits (minimum 100 required)
+    // 1. Check credits (minimum 10 required)
     const { data: profile } = await admin
         .from('profiles')
         .select('credits')
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (!profile || profile.credits < CREDITS_PER_GENERATION) {
         return NextResponse.json(
-            { error: 'Insufficient credits. You need at least 100 credits to generate a photo.' },
+            { error: 'Insufficient credits. You need at least 10 credits to generate a photo.' },
             { status: 402 },
         );
     }
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Failed to create pack' }, { status: 500 });
     }
 
-    // 4. Deduct 100 credits atomically
+    // 4. Deduct 10 credits atomically
     const { error: spendErr } = await admin
         .from('profiles')
         .update({ credits: profile.credits - CREDITS_PER_GENERATION, updated_at: new Date().toISOString() })
