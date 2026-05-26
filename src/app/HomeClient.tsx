@@ -10,15 +10,15 @@ type AuthTab = 'login' | 'signup';
 type Billing = 'monthly' | 'yearly';
 
 const PRICES = {
-  starter: { monthly: 19,  yearly: 15  },
-  pro:     { monthly: 29, yearly: 23 },
-  max:     { monthly: 99, yearly: 79 },
+  oneshot: { monthly: 29,  yearly: 29 },
+  pro:     { monthly: 49, yearly: 469 },
+  max:     { monthly: 99, yearly: 949 },
 };
 
 const BILLED = {
-  starter: { monthly: 'Billed monthly', yearly: 'Billed $182/year'  },
-  pro:     { monthly: 'Billed monthly', yearly: 'Billed $276/year' },
-  max:     { monthly: 'Billed monthly', yearly: 'Billed $948/year' },
+  oneshot: { monthly: 'One-time payment', yearly: 'One-time payment' },
+  pro:     { monthly: 'Billed monthly', yearly: 'Billed $469/year' },
+  max:     { monthly: 'Billed monthly', yearly: 'Billed $949/year' },
 };
 
 const GEN_STEPS = [
@@ -460,12 +460,12 @@ export default function HomeClient() {
           </div>
         </div>
         <div className="pricing-cards">
-          {(['starter', 'pro', 'max'] as const).map(plan => (
+          {(['oneshot', 'pro', 'max'] as const).map(plan => (
             <article key={plan} className={`pcard${plan === 'pro' ? ' popular' : ''}`}>
               {plan === 'pro' && <div className="ribbon">Most popular</div>}
               <header>
-                <h3>{plan.charAt(0).toUpperCase() + plan.slice(1)}</h3>
-                <p className="pcard-desc">{plan === 'starter' ? 'Perfect for a quick profile refresh.' : plan === 'pro' ? 'Ideal for freelancers & job seekers.' : 'For teams, agencies & heavy users.'}</p>
+                <h3>{plan === 'oneshot' ? 'One-shot' : plan.charAt(0).toUpperCase() + plan.slice(1)}</h3>
+                <p className="pcard-desc">{plan === 'oneshot' ? 'Get 40 photos with one payment.' : plan === 'pro' ? 'Ideal for freelancers & job seekers.' : 'For teams, agencies & heavy users.'}</p>
               </header>
               <div className="price">
                 <span className="cur">$</span>
@@ -474,24 +474,24 @@ export default function HomeClient() {
               </div>
               <p className="billed">{BILLED[plan][billing]}</p>
               <button className={`plan-btn${plan === 'pro' ? ' primary' : ''}`} onClick={() => handlePlan(plan)}>
-                {plan === 'starter' ? 'Get Starter' : plan === 'pro' ? 'Subscribe to Pro' : 'Subscribe to Max'}
+                {plan === 'oneshot' ? 'Buy One-shot' : plan === 'pro' ? 'Subscribe to Pro' : 'Subscribe to Max'}
               </button>
               <ul className="features">
-                {plan === 'starter' && <>
-                  <li><span className="check">✓</span><span><strong>100 credits</strong> / month</span></li>
+                {plan === 'oneshot' && <>
+                  <li><span className="check">✓</span><span><strong>40 photos</strong> · one payment</span></li>
                   <li><span className="check">✓</span><span>Standard render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'pro' && <>
-                  <li><span className="check">✓</span><span><strong>250 credits</strong> / month</span></li>
+                  <li><span className="check">✓</span><span><strong>100 photos</strong> / month</span></li>
                   <li><span className="check">✓</span><span>High-likeness AI model</span></li>
                   <li><span className="check">✓</span><span>Priority render queue</span></li>
                   <li><span className="check">✓</span><span>Private My Folders storage</span></li>
                   <li><span className="check">✓</span><span>HD downloads (1055px)</span></li>
                 </>}
                 {plan === 'max' && <>
-                  <li><span className="check">✓</span><span><strong>1,000 credits</strong> / month</span></li>
+                  <li><span className="check">✓</span><span><strong>250 photos</strong> / month</span></li>
                   <li><span className="check">✓</span><span>Ultra-high likeness model</span></li>
                   <li><span className="check">✓</span><span>Instant priority rendering</span></li>
                   <li><span className="check">✓</span><span>Dedicated support</span></li>
@@ -502,12 +502,6 @@ export default function HomeClient() {
             </article>
           ))}
         </div>
-        <p className="pricing-foot">
-          Need just one pack?{' '}
-          <button style={{ background: 'none', border: 'none', color: 'var(--blue)', cursor: 'pointer', fontSize: 'inherit', padding: 0 }} onClick={() => handlePlan('oneshot')}>
-            Buy 10 credits for $4.90 — 1 generation
-          </button>{' '}
-        </p>
       </section>
 
       {/* ── GALLERY ── */}

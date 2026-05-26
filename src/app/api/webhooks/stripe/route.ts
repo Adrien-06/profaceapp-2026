@@ -5,10 +5,9 @@ import { createServiceClient } from '@/lib/supabase/server';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
 
 const PLAN_CREDITS: Record<string, number> = {
-  starter: 100,
-  pro:     250,
-  max:     1000,
-  oneshot: 10,
+  oneshot: 400,
+  pro:     1000,
+  max:     2500,
 };
 
 async function addCredits(
@@ -93,7 +92,7 @@ export async function POST(req: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const userId  = session.metadata?.user_id ?? null;
     const email   = session.customer_details?.email ?? session.metadata?.user_email ?? null;
-    const plan    = session.metadata?.plan ?? 'starter';
+    const plan    = session.metadata?.plan ?? 'pro';
     const credits = parseInt(session.metadata?.credits ?? '0', 10) || PLAN_CREDITS[plan] || 0;
 
     if (!credits) {
@@ -121,7 +120,7 @@ export async function POST(req: Request) {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const userId  = subscription.metadata?.user_id ?? null;
     const email   = invoice.customer_email ?? null;
-    const plan    = subscription.metadata?.plan ?? 'starter';
+    const plan    = subscription.metadata?.plan ?? 'pro';
     const credits = parseInt(subscription.metadata?.credits ?? '0', 10) || PLAN_CREDITS[plan] || 0;
 
     if (credits) {
